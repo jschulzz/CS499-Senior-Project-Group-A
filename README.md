@@ -16,9 +16,11 @@ Use this command to access mysql command line
 
     /usr/local/mysql/bin/mysql -uroot -p
 
+using mysql version 5.7
+
 Execute in mysql command line
 
-    mysql > create database SupremeCourtTwitter;
+    mysql > CREATE DATABASE SupremeCourtTwitter CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 
 Execute in local repo directory
 
@@ -36,9 +38,11 @@ Execute in local repo directory
 
 Inside the mysite folder of project directory
 
+     . ./buildEnv.sh    // not a typo, there are multiple dots
+
     python manage.py migrate
 
-    python manage.py makemigrations
+    python manage.py makemigrations  // this can take some time
 
     python manage.py migrate
 

@@ -224,6 +224,7 @@ def download(request):
 
     response = HttpResponse(content_type='application/x-download')
     response['Content-Disposition'] = 'attachment; filename="tweets.csv"'
+    response.write(u'\ufeff'.encode('utf8'))
 
     #set headers of csv
     fieldnames = ['datetime', 'last updated', 'original username', 'original screen name',
@@ -249,7 +250,8 @@ def download(request):
                   'combined overall sentiment', 'twitter users query', 'twitter excluded users query', 'twitter hashtags query', 'twitter keywords query',
                   'twitter from date query', 'twitter to date query']
 
-    writer = csv.writer(response, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    #set headers of csv
+    writer = csv.writer(response, dialect="excel", delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     writer.writerow(fieldnames)
 
     for tweet in tweetsList:
