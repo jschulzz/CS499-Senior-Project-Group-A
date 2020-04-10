@@ -29,14 +29,16 @@ th {
 .card {
 	border-radius: 10px !important;
 	height: auto !important;
-	padding-bottom: 110px !important;
+	padding-bottom: 80px !important;
 }
 .card-action {
 	border-radius: 0 0 10px 10px !important;
 }
 
+
 .tweet-stats {
-	text-overflow: ellipsis;
+    text-overflow: ellipsis;
+    margin-bottom: 0;
 }
 .card-content {
 	overflow: auto !important;
@@ -108,7 +110,7 @@ img {
 }
 
 .modal {
-	border-radius: 30px;
+	border-radius: 10px;
 }
 
 .modal.bottom-sheet {

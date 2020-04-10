@@ -67,17 +67,68 @@
                 <div class="grid-sizer"></div>
                 <div class="gutter-sizer"></div>
                 {% for tweet in tweets %}
+                <!-- !TWEET MODAL! -->
+                <div id="{{tweet.id}}" class="modal">
+                    <div class="modal-content">
+                        <div class="row truncate">
+                            <h5>
+                                <a class="inline-icon left screenname" style="padding-right: 20px"
+                                    href="http://www.twitter.com/{{ tweet.originalUser.username }}">@{{tweet.originalUser.username}}
+                                    {%if tweet.originalUser.isVerified %}<i
+                                        class="material-icons">check_circle</i>{% endif %}
+                                </a>
+                                <span class="inline-icon grey-text left">
+                                    {% if tweet.originalUser.location %}
+                                    <i class="material-icons">location_on</i>
+                                    {{tweet.originalUser.location}}
+                                    {% else %}
+                                    <i class="material-icons">location_off</i>
+                                    {% endif %}
+                                </span>
+                            </h5>
+                        </div>
+                        <p>{{tweet.originalText|urlize}}</p>
+                        <div class="row">
+                            <h5><b>Bot rating:</b><span id="bot-score"> 0.005</span></h5>
+                        </div>
+                        <table class="striped">
+                            <thead>
+                                <tr>
+                                    <th>Stat</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr>
+                                    <td>Gunning Fog</td>
+                                    <td>0.18</td>
+                                </tr>
+                                <tr>
+                                    <td>Positive Sentiment</td>
+                                    <td>5.34</td>
+                                </tr>
+                                <tr>
+                                    <td>Flesch Kincaid Grade</td>
+                                    <td>10.5</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+                <!-- !TWEET TILE! -->
                 <div class="grid-item">
                     <div class="card small hoverable">
                         <div class="card-content">
                             <div class="card-title">
                                 <div class="row truncate">
-                                    <a class="inline-icon left" style="padding-right: 20px"
+                                    <a class="inline-icon left screenname" style="padding-right: 20px"
                                         href="http://www.twitter.com/{{ tweet.originalUser.username }}">@{{tweet.originalUser.username}}
                                         {%if tweet.originalUser.isVerified %}<i
                                             class="material-icons">check_circle</i>{% endif %}
                                     </a>
-                                    <span class="grey-text left">
+                                    <span class="inline-icon grey-text left">
                                         {% if tweet.originalUser.location %}
                                         <i class="material-icons">location_on</i>
                                         {{tweet.originalUser.location}}
@@ -91,7 +142,7 @@
                             <p>{{tweet.originalText|urlize}}</p>
                             <!-- </span> -->
                         </div>
-                        <div class="card-action tweet-stats row">
+                        <div class="card-action tweet-stats row valign-wrapper">
                             <div class="col s2">
                                 <span class="grey-text text-darken-4"><i
                                         class="material-icons">favorite</i>{{tweet.numFavoritesOriginal}}</span>
@@ -100,8 +151,13 @@
                                 <span class="grey-text text-darken-4"><i
                                         class="material-icons">loop</i>{{tweet.numRetweetsOriginal}}</span>
                             </div>
+                            <div class="col s2">
+                                <a data-role="none" href="#{{tweet.id}}" class="modal-trigger tweet-link">
+                                    <span class="grey-text text-darken-4"><i class="material-icons">launch</i></span>
+                                </a>
+                            </div>
 
-                            <div class="col s8">
+                            <div class="col s6">
                                 Created: {{tweet.createdAt}}
                                 <br>
                                 Updated: {{tweet.lastUpdated }}
@@ -265,9 +321,11 @@
         $('.modal').modal();
         $('.datepicker').datepicker();
         $('select').formSelect();
-        $('#change-query-modal').modal({
-            dismissible: true
-        });
+        $('#change-query-modal')
+            .modal({
+                dismissible: true,
+
+            });
 
         $('.grid').masonry({
             // options
