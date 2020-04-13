@@ -28,26 +28,18 @@
                                         {% if request.GET.ANDOR == "AND" %} checked
                                         {% endif %} /><span>AND</span></label></p>
                         </td>
-                        <td><input type="text" class="tweet-filter validate" name="users"
-                                {% if request.GET.page == None %}value="{{ request.GET.users }}"
-                                {% elif dbSearchDict.users != None %}value="{{ dbSearchDict.users }}" {% endif %}
-                                placeholder="  Users"></td>
-                        <td><input type="text" class="tweet-filter validate" name="hashtags"
-                                {% if request.GET.page == None %}value="{{ request.GET.hashtags }}"
-                                {% elif dbSearchDict.hashtags != None %}value="{{ dbSearchDict.hashtags }}" {% endif %}
-                                placeholder="    Hashtags"></td>
                         <td><input type="text" class="tweet-filter validate" name="keywords"
                                 {% if request.GET.page == None %}value="{{ request.GET.keywords }}"
                                 {% elif dbSearchDict.keywords != None %}value="{{ dbSearchDict.keywords }}" {% endif %}
-                                placeholder="    Keywords"></td>
+                                placeholder="Keywords"></td>
                         <td><input type="text" class="tweet-filter datepicker" name="from"
                                 {% if request.GET.page == None %}value="{{ request.GET.from }}"
                                 {% elif dbSearchDict.from != None %}value="{{ dbSearchDict.from }}" {% endif %}
-                                placeholder="  From"></td>
+                                placeholder="From"></td>
                         <td><input type="text" class="tweet-filter datepicker" name="to"
                                 {% if request.GET.page == None %}value="{{ request.GET.to }}"
                                 {% elif dbSearchDict.to != None %}value="{{ dbSearchDict.to }}" {% endif %}
-                                placeholder="  To"></td>
+                                placeholder="To"></td>
 
                         <td><button class="btn-floating waves-effect waves-light btn" type="submit" name="search"><i
                                     class="material-icons">search</i></button></td>

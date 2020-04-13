@@ -14,7 +14,8 @@ th {
 .tweet-filter {
 	background-color: white !important;
 	border-radius: 5px !important;
-	border: 1px solid #9e9e9e !important;
+    border: 1px solid #9e9e9e !important;
+    text-indent: 10px;
 }
 
 .grid-sizer,
