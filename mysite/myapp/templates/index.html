@@ -8,53 +8,102 @@
 <body class="w3-light-grey w3-content" style="max-width:1600px">
     <!-- !PAGE CONTENT! -->
     <div class="w3-main">
-        <div class="w3-container center grey darken-3 white-text">
-            <a class="right white-text" style="padding-top:10px; font-family: Helvetica Neue, sans-serif"
-                href="{% url 'logout' %}">Logout</a>
-            <h1><img src="{% static 'twitter-logo copy.png' %}" alt="Twitter Logo"><b>SCOTUS Tweet Database</b></h1>
+        <!-- NAVBAR -->
+        <div class="navbar-fixed">
+            <nav>
+                <div class="nav-wrapper w3-container grey darken-3 white-text">
+                    <a class="brand-logo"><i class="fa fa-twitter"></i> SCOTUS Tweet Database</a>
+                    <ul id="nav-mobile" class="right hide-on-med-and-down">
+                        <li>
+                            <a href="/scotustwitter/download" class="waves-effect waves-light btn modal-trigger">
+                                Download Data<i class="material-icons">file_download</i>\
+                            </a>
+                        </li>
+                        <li>
+                            <a href="?refresh=true" class="waves-effect waves-light btn">
+                                REFRESH<i class="material-icons">refresh</i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'logout' %}">LOGOUT</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
         </div>
-
-        <div class="w3-section w3-padding-10"></div>
-        <div class="w3-container">
-            <!-- !SEARCH! -->
+        <!-- SIDENAV SEARCH -->
+        <ul id="slide-out" class="sidenav sidenav-fixed">
             <form action="" method="GET">{% csrf_token %}
-                <table>
-                    <tr>
-                        <td>
-                            <p><label><input value="OR" class="with-gap" name="ANDOR" type="radio"
-                                        {% if request.GET.ANDOR == "OR" or request.GET.ANDOR == None %} checked
-                                        {% endif %} /><span>OR</span></label></p>
-                            <p><label><input value="AND" class="with-gap" name="ANDOR" type="radio"
-                                        {% if request.GET.ANDOR == "AND" %} checked
-                                        {% endif %} /><span>AND</span></label></p>
-                        </td>
-                        <td><input type="text" class="tweet-filter validate" name="keywords"
-                                {% if request.GET.page == None %}value="{{ request.GET.keywords }}"
-                                {% elif dbSearchDict.keywords != None %}value="{{ dbSearchDict.keywords }}" {% endif %}
-                                placeholder="Keywords"></td>
-                        <td><input type="text" class="tweet-filter datepicker" name="from"
-                                {% if request.GET.page == None %}value="{{ request.GET.from }}"
-                                {% elif dbSearchDict.from != None %}value="{{ dbSearchDict.from }}" {% endif %}
-                                placeholder="From"></td>
-                        <td><input type="text" class="tweet-filter datepicker" name="to"
-                                {% if request.GET.page == None %}value="{{ request.GET.to }}"
-                                {% elif dbSearchDict.to != None %}value="{{ dbSearchDict.to }}" {% endif %}
-                                placeholder="To"></td>
+                <!--SEARCH -->
+                <li class="no-padding">
+                    <ul class="collapsible collapsible-accordion">
+                        <li class="active">
+                            <a class="collapsible-header">Search</a>
+                            <div class="collapsible-body">
+                                <ul>
+                                    <li class="center">
+                                        <input id="keywords" type="text" class="tweet-filter validate" name="keywords"
+                                            {% if request.GET.page == None %} value="{{ request.GET.keywords }}"
+                                            {% elif dbSearchDict.keywords != None %} value="{{ dbSearchDict.keywords }}"
+                                            {% endif %} placeholder="Keywords">
+                                    </li>
 
-                        <td><button class="btn-floating waves-effect waves-light btn" type="submit" name="search"><i
-                                    class="material-icons">search</i></button></td>
-                        <td><a class="btn-floating waves-effect waves-light btn" href="?refresh=true"><i
-                                    class="material-icons">refresh</i></a></td>
-                        <td><a href="/scotustwitter/download"
-                                class="btn-floating waves-effect waves-light btn modal-trigger"><i
-                                    class="material-icons">file_download</i></a></td>
-                    </tr>
-                </table>
+                                    <li class="center">
+                                        <p class="row">
+                                            <label class="col s6 center-align"><input value="OR" class="with-gap"
+                                                    name="ANDOR" type="radio"
+                                                    {% if request.GET.ANDOR == "OR" or request.GET.ANDOR == None %}
+                                                    checked {% endif %} /><span>OR</span>
+                                            </label>
+                                            <label class="col s6 center-align"><input value="AND" class="with-gap"
+                                                    name="ANDOR" type="radio" {% if request.GET.ANDOR == "AND" %}
+                                                    checked {% endif %} /><span>AND</span>
+                                            </label>
+                                        </p>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+                <!-- FILTERS -->
+                <li class="no-padding">
+                    <ul class="collapsible collapsible-accordion">
+                        <li class="active">
+                            <a class="collapsible-header">Filters</a>
+                            <div class="collapsible-body">
+                                <ul>
+
+                                    <li class="center">
+                                        <input type="text" class="tweet-filter datepicker" name="from"
+                                            {% if request.GET.page == None %}value="{{ request.GET.from }}"
+                                            {% elif dbSearchDict.from != None %}value="{{ dbSearchDict.from }}"
+                                            {% endif %} placeholder="From Date">
+                                    </li>
+                                    <li class="center">
+                                        <input type="text" class="tweet-filter datepicker" name="to"
+                                            {% if request.GET.page == None %}value="{{ request.GET.to }}"
+                                            {% elif dbSearchDict.to != None %}value="{{ dbSearchDict.to }}" {% endif %}
+                                            placeholder="To Date">
+                                    </li>
+
+                                </ul>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+                <li class="center">
+                    <button class="btn waves-effect waves-light tweet-filter" type="submit" name="action">Search
+                        <i class="material-icons left">search</i>
+                    </button>
+                </li>
             </form>
 
-            <!--!DISPLAY TWEETS!-->
-            <div class="w3-section w3-padding-10"></div>
+        </ul>
+        <div class="w3-section w3-padding-10"></div>
 
+        <div class="outside-sidebar w3-container">
+            <!--!DISPLAY TWEETS!-->
             <div class="grid">
                 <div class="grid-sizer"></div>
                 <div class="gutter-sizer"></div>
@@ -161,7 +210,6 @@
             </div>
         </div>
     </div>
-    </div>
 </body>
 
 {% if user.is_superuser %}
@@ -173,7 +221,7 @@
 {% endif %}
 
 <!-- pagination -->
-<div class="pagination row container">
+<div class="pagination row container outside-sidebar">
 
     {% if tweets.has_previous %}
     <a class="pagination-action" href="?page=1">
@@ -311,16 +359,17 @@
 <script>
     $(document).ready(function () {
         $('.modal').modal();
-        $('.datepicker').datepicker();
+        $('.collapsible').collapsible();
         $('select').formSelect();
+        $('.datepicker').datepicker({
+            container: $("body")
+        });
         $('#change-query-modal')
             .modal({
                 dismissible: true,
 
             });
-
         $('.grid').masonry({
-            // options
             columnWidth: '.grid-sizer',
             gutter: '.gutter-sizer',
             itemSelector: '.grid-item',
