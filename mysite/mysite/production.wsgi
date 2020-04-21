@@ -11,6 +11,7 @@ os.environ['DB_PASSWORD']="cs499"
 os.environ['EMAIL_HOST_USER']="cs499teamA@gmail.com"
 os.environ['EMAIL_HOST_PASSWORD']="SCOTUSTwitter2019"
 os.environ['ADMIN_EMAILS']="adriennecorwin@gmail.com,michael.zilis@uky.edu,justin.wedeking@uky.edu"
+os.environ['RAPIDAPI_KEY']="0886a75d35msh86655023202de19p197703jsnad4fb3403402"
 
 from django.core.wsgi import get_wsgi_application
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mysite.settings")

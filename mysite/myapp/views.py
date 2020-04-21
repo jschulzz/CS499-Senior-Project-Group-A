@@ -55,6 +55,9 @@ def pagify(tweetsList, limit, request):
 
 def renderIndexPage(request, tweets, pullStatus, error=None, warning=None):
     global pullParameters, dbSearchDict
+    print(dbSearchDict)
+    if dbSearchDict["keywords"] == ['']:
+        dbSearchDict["keywords"] = None
     return render(
         request,
         "index.html",
