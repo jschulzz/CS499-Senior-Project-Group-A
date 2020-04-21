@@ -36,6 +36,8 @@ Execute in local repo directory
   
     pip install vaderSentiment
 
+    pip install botometer
+
 Inside the mysite folder of project directory
 
      . ./buildEnv.sh    // not a typo, there are multiple dots

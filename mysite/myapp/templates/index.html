@@ -130,7 +130,20 @@
                         </div>
                         <p>{{tweet.originalText|urlize}}</p>
                         <div class="row">
-                            <h5><b>Bot rating:</b><span id="bot-score"> 0.005</span></h5>
+                            <h5><b>Bot rating (English):</b>
+                                {% if tweet.originalUser.botScoreEnglish > 0 %}
+                                <span id="bot-score"> {% widthratio tweet.originalUser.botScoreEnglish 1 100 %}%</span>
+                                {% else %}
+                                <span id="bot-score">N/A</span>
+                                {% endif %}
+                            </h5>
+                            <h5><b>Bot rating (Universal):</b>
+                                {% if tweet.originalUser.botScoreEnglish > 0 %}
+                                <span id="bot-score">  {% widthratio tweet.originalUser.botScoreUniversal 1 100 %}%</span>
+                                {% else %}
+                                <span id="bot-score">N/A</span>
+                                {% endif %}
+                            </h5>
                         </div>
                         <table class="striped">
                             <thead>
@@ -362,7 +375,8 @@
         $('.collapsible').collapsible();
         $('select').formSelect();
         $('.datepicker').datepicker({
-            container: $("body")
+            container: $("body"),
+            showClearBtn: true
         });
         $('#change-query-modal')
             .modal({
