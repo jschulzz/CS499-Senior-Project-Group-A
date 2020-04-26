@@ -48,8 +48,6 @@ def pagify(tweetsList, limit, request):
     # only display x tweets per page
     paginator = Paginator(tweetsList, limit)
     page = request.GET.get("page")
-    print("Getting Page {}".format(page))
-    print(len(tweetsList))
     return paginator.get_page(page)
 
 
@@ -73,7 +71,7 @@ def renderIndexPage(request, tweets, pullStatus, error=None, warning=None):
 def index(request):
     global currentTwitterSearchDict, tweetsList, pullParameters
     if not request.user.is_authenticated:
-        return redirect("login")
+        return redirect("/login")
         # refresh
     if request.GET.get("refresh"):  # refresh page aka display all tweets from db again
         if request.GET.get("refresh") == "true":

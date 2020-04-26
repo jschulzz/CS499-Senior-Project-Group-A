@@ -15,12 +15,14 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
+from django.views.generic import RedirectView
 from myapp import views as v
 from myapp import tasks
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
+    url(r'^$', RedirectView.as_view(url='scotustwitter/'), name='home'),  #default url
     url(r'^admin/', admin.site.urls),
     url(r'^scotustwitter/$', v.index, name='home'),
     url(r'^error/$', v.error, name='error'),
