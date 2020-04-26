@@ -91,11 +91,22 @@
                                         <div class="range-field">
                                             <input type="range" name="botMax" min="0" max="100"
                                                 {% if request.GET.page == None %}value="{{ request.GET.botMax }}"
-                                                {% elif dbSearchDict.botMAx != None %}value="{{ dbSearchDict.botMax }}"
+                                                {% elif dbSearchDict.botMax != None %}value="{{ dbSearchDict.botMax }}"
                                                 {% endif %} />
                                         </div>
                                     </li>
-
+                                    <li>
+                                        <label>Show Unscored Users</label>
+                                        <div class="switch">
+                                            <label>
+                                                Hide
+                                                <input name="showUnscoredUsers" type="checkbox" value="True"
+                                                    {% if dbSearchDict.showUnscoredUsers %}checked {% endif %}>
+                                                <span class="lever"></span>
+                                                Show
+                                            </label>
+                                        </div>
+                                    </li>
                                 </ul>
                             </div>
                         </li>
