@@ -19,11 +19,17 @@ th {
 	margin-top: 65px;
 }
 
+li.tweet-filter,
 input.tweet-filter {
 	width: 85% !important;
 }
 button.tweet-filter {
 	width: 95% !important;
+}
+
+span.value {
+	margin-top: -9px !important;
+	margin-left: 1px !important;
 }
 
 .grid-sizer,
