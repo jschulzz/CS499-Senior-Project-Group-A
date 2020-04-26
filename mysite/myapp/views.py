@@ -307,8 +307,9 @@ def index(request):
 def download(request):
     global tweetsList
 
+    filename = ''.join(["tweets_", datetime.now().strftime("%Y-%m-%d_%H.%M.%S"), '.csv'])
     response = HttpResponse(content_type="application/x-download")
-    response["Content-Disposition"] = 'attachment; filename="tweets.csv"'
+    response["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
     response.write("\ufeff".encode("utf8"))
 
     # set headers of csv
