@@ -112,6 +112,40 @@
                         </li>
                     </ul>
                 </li>
+                <!-- SORTING -->
+                <li class="no-padding">
+                    <ul class="collapsible collapsible-accordion">
+                        <li class="active">
+                            <a class="collapsible-header">Sorting</a>
+                            <div class="collapsible-body row">
+                                <ul class="col m10 offset-m1">
+                                    <li>
+                                        <select name="sortBy">
+                                            {% for i in sortFields %}
+                                                {%if dbSearchDict.sortBy == i %}
+                                                    <option selected="selected" value="{{ i }}">{{ i }}</option>
+                                                {%else %}
+                                                    <option value="{{ i }}">{{ i }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                    </li>
+                                    <li>
+                                        <label class="switch">
+                                            {%if dbSearchDict.sortOrder == "on" %}
+                                                <input name="sortOrder" type="checkbox" checked="True">
+                                            {%else %}
+                                                <input name="sortOrder" type="checkbox">
+                                            {% endif %}
+
+                                            <span class="slider">Reverse</span>
+                                        </label>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
                 <li class="center">
                     <button class="btn waves-effect waves-light tweet-filter" type="submit" name="action">Search
                         <i class="material-icons left">search</i>
