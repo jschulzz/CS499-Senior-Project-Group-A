@@ -36,7 +36,7 @@ auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
 
 bom = botometer.Botometer(
-    wait_on_ratelimit=True, rapidapi_key=rapidapi_key, **twitter_app_auth, botometer_api_url="https://botometer-pro.p.rapidapi.com"
+    wait_on_ratelimit=True, rapidapi_key=rapidapi_key, **twitter_app_auth
 )
 
 # initial twitter search criteria
@@ -642,7 +642,6 @@ def pull():
                 print("Finished pulling new tweets")
 
             #if done with searching, wait 12 hours and try again
-
             else:
                 time.sleep(60*60*12)
                 done = False
@@ -658,5 +657,4 @@ def startStopPull(request):
 pullParameters = getPullParametersAsStrings(initialSearchDict)
 buildTwitterSearchQuery(initialSearchDict)
 pullThread = Thread(target=pull) #pull tweets asynchronously so that main thread isn't blocked
-
 pullThread.start()
