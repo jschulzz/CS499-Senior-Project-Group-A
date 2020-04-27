@@ -200,7 +200,10 @@
                                 {% endif %}
                             </h5>
                         </div>
-                        <table class="striped">
+                        <ul class="collapsible">
+                            <li>
+                                <div class="collapsible-header">Original Tweet Text Stats</div>
+                                <div class="collapsible-body"><table class="striped">
                             <thead>
                                 <tr>
                                     <th>Stat</th>
@@ -210,23 +213,246 @@
 
                             <tbody>
                                 <tr>
-                                    <td>Gunning Fog</td>
-                                    <td>0.18</td>
+                                    <td>Syllable Count</td>
+                                    <td>{{tweet.original_syllable_count}}</td>
                                 </tr>
                                 <tr>
-                                    <td>Positive Sentiment</td>
-                                    <td>5.34</td>
+                                    <td>Lexicon Count</td>
+                                    <td>{{tweet.original_lexicon_count}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Sentence Count</td>
+                                    <td>{{tweet.original_sentence_count}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Flesch Reading Ease</td>
+                                    <td>{{tweet.original_flesch_reading_ease}}</td>
                                 </tr>
                                 <tr>
                                     <td>Flesch Kincaid Grade</td>
-                                    <td>10.5</td>
+                                    <td>{{tweet.original_flesch_kincaid_grade}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Gunning Fog</td>
+                                    <td>{{tweet.original_gunning_fog}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Smog Index</td>
+                                    <td>{{tweet.original_smog_index}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Automated Readability Index</td>
+                                    <td>{{tweet.original_automated_readability_index}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Coleman Liau Index</td>
+                                    <td>{{tweet.original_coleman_liau_index}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Linsear Write Formula</td>
+                                    <td>{{tweet.original_linsear_write_formula}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Dale-Chall Readability Score</td>
+                                    <td>{{tweet.original_dale_chall_readability_score}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Difficult Words</td>
+                                    <td>{{tweet.original_difficult_words}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Text Standard</td>
+                                    <td>{{tweet.original_text_standard}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Negative Sentiment Score</td>
+                                    <td>{{tweet.original_negative_sentiment}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Neutral Sentiment Score</td>
+                                    <td>{{tweet.original_neutral_sentiment}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Positive Sentiment Score</td>
+                                    <td>{{tweet.original_positive_sentiment}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Overall Sentiment Score</td>
+                                    <td>{{tweet.original_overall_sentiment}}</td>
                                 </tr>
                             </tbody>
-                        </table>
+                        </table></div>
+                            </li>
+                            <li>
+                                <div class="collapsible-header">Tweet Comment Text Stats</div>
+                                <div class="collapsible-body"><table class="striped">
+                            <thead>
+                                <tr>
+                                    <th>Stat</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr>
+                                    <td>Syllable Count</td>
+                                    <td>{{tweet.comment_syllable_count}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Lexicon Count</td>
+                                    <td>{{tweet.comment_lexicon_count}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Sentence Count</td>
+                                    <td>{{tweet.comment_sentence_count}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Flesch Reading Ease</td>
+                                    <td>{{tweet.comment_flesch_reading_ease}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Flesch Kincaid Grade</td>
+                                    <td>{{tweet.comment_flesch_kincaid_grade}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Gunning Fog</td>
+                                    <td>{{tweet.comment_gunning_fog}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Smog Index</td>
+                                    <td>{{tweet.comment_smog_index}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Automated Readability Index</td>
+                                    <td>{{tweet.comment_automated_readability_index}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Coleman Liau Index</td>
+                                    <td>{{tweet.comment_coleman_liau_index}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Linsear Write Formula</td>
+                                    <td>{{tweet.comment_linsear_write_formula}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Dale-Chall Readability Score</td>
+                                    <td>{{tweet.comment_dale_chall_readability_score}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Difficult Words</td>
+                                    <td>{{tweet.comment_difficult_words}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Text Standard</td>
+                                    <td>{{tweet.comment_text_standard}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Negative Sentiment Score</td>
+                                    <td>{{tweet.comment_negative_sentiment}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Neutral Sentiment Score</td>
+                                    <td>{{tweet.comment_neutral_sentiment}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Positive Sentiment Score</td>
+                                    <td>{{tweet.comment_positive_sentiment}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Overall Sentiment Score</td>
+                                    <td>{{tweet.comment_overall_sentiment}}</td>
+                                </tr>
+                            </tbody>
+                        </table></div>
+                            </li>
+                            <li>
+                                <div class="collapsible-header">Combined Text Stats</div>
+                                <div class="collapsible-body"><table class="striped">
+                            <thead>
+                                <tr>
+                                    <th>Stat</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr>
+                                    <td>Syllable Count</td>
+                                    <td>{{tweet.combined_syllable_count}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Lexicon Count</td>
+                                    <td>{{tweet.combined_lexicon_count}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Sentence Count</td>
+                                    <td>{{tweet.combined_sentence_count}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Flesch Reading Ease</td>
+                                    <td>{{tweet.combined_flesch_reading_ease}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Flesch Kincaid Grade</td>
+                                    <td>{{tweet.combined_flesch_kincaid_grade}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Gunning Fog</td>
+                                    <td>{{tweet.combined_gunning_fog}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Smog Index</td>
+                                    <td>{{tweet.combined_smog_index}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Automated Readability Index</td>
+                                    <td>{{tweet.combined_automated_readability_index}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Coleman Liau Index</td>
+                                    <td>{{tweet.combined_coleman_liau_index}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Linsear Write Formula</td>
+                                    <td>{{tweet.combined_linsear_write_formula}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Dale-Chall Readability Score</td>
+                                    <td>{{tweet.combined_dale_chall_readability_score}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Difficult Words</td>
+                                    <td>{{tweet.combined_difficult_words}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Text Standard</td>
+                                    <td>{{tweet.combined_text_standard}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Negative Sentiment Score</td>
+                                    <td>{{tweet.combined_negative_sentiment}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Neutral Sentiment Score</td>
+                                    <td>{{tweet.combined_neutral_sentiment}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Positive Sentiment Score</td>
+                                    <td>{{tweet.combined_positive_sentiment}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Overall Sentiment Score</td>
+                                    <td>{{tweet.combined_overall_sentiment}}</td>
+                                </tr>
+                            </tbody>
+                        </table></div>
+                            </li>
+                        </ul>
+                        
 
                     </div>
                 </div>
-                <!-- !TWEET TILE! -->
+                <!-- !TWEET CARD! -->
                 <div class="grid-item">
                     <div class="card small hoverable">
                         <div class="card-content">
@@ -245,10 +471,11 @@
                                         <i class="material-icons">location_off</i>
                                         {% endif %}
                                     </span>
+                                    <i class="fa fa-user-robot"></i>
                                 </div>
                             </div>
                             <!-- <span class="grey-text text-darken-4"> -->
-                            <p>{{tweet.originalText|urlize}}</p>
+                            <p>{{tweet.commentText|urlize}}</p>
                             <!-- </span> -->
                         </div>
                         <div class="card-action tweet-stats row valign-wrapper">
