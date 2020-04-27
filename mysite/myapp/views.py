@@ -18,6 +18,7 @@ from datetime import datetime, timedelta
 import pytz
 import csv
 import os
+import pprint
 import textstat
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
@@ -266,71 +267,57 @@ def index(request):
     
     
     # Filters
-    filteredTweets = Tweet.objects.all()
+    query_filter = Q()
     if botFilter is not None:
-        filteredTweets = filteredTweets.filter(botFilter)
+        query_filter &= botFilter
     if showUnscoredUsersFilter is not None:
-        filteredTweets = filteredTweets.filter(showUnscoredUsersFilter)
+        query_filter &= showUnscoredUsersFilter
 
+    
     # OR fields
     if request.GET.get("ANDOR") == "OR" or request.GET.get("ANDOR") == None:
+        # join all queries together
         queries = userQueries + keywordQueries
+        or_filter = Q()
+        for q in queries:
+            or_filter |= q
 
-        # if user and keyword entries in search bars
+        # combine OR filter with our other filters
+        query_filter &= or_filter
         if queries:
-            query = queries.pop()
-
-            for item in queries:  # OR all queries together
-                query |= item
-
-            tweetsList = list(filteredTweets.filter(query))  # put result of filter in list
-
-            tweetsList += hashtagResults  # add the hashtag results to list
+            # put result of filter in list, and add hashtag results
+            tweetsList = list(Tweet.objects.filter(query_filter))  
+            tweetsList += hashtagResults 
 
         # if no user or keyword entries but hashtag entries
         elif hashtagResults:
             tweetsList = hashtagResults
+        else:
+            tweetsList = []
 
     # AND fields
     else:
-        usersList = []
-        keywordList = []
+        user_query = Q()
+        keyword_query = Q()
 
         # get results of user filter
-        if userQueries:
-            query = userQueries.pop()
-            for item in userQueries:
-                query |= item
-            
-            usersList = list(filteredTweets.filter(query))
+        for q in userQueries:
+            user_query |= q
+        query_filter &= user_query 
 
         # get results of keyword filter
-        if keywordQueries:
-            query = keywordQueries.pop()
-            for item in keywordQueries:
-                query |= item
-            
-            keywordList = list(filteredTweets.filter(query))
+        for q in keywordQueries:
+            keyword_query |= q
+        query_filter &= keyword_query 
 
-        # if at least 2 of the user, hashtag, or keyword fields have entries, AND results of users, keywords, hashtags queries
-        # if none or 1 of the fields is filled out, treat like OR instead
-        if (
-            request.GET.get("user") != ""
-            and request.GET.get("hashtags") != ""
-            or request.GET.get("user") != ""
-            and request.GET.get("keywords") != ""
-            or request.GET.get("keywords") != ""
-            and request.GET.get("hashtags") != ""
-        ):
-            tweetsList = list(
-                set.intersection(
-                    *(set(x) for x in [usersList, keywordList, hashtagResults] if x)
-                )
-            )
-        else:
-            tweetsList = usersList + keywordList + hashtagResults
+        print(query_filter)
+        if hashtagResults:
+            filtered_tweets = list(Tweet.objects.filter(query_filter))
+            tweetsList = list(set.intersection(set(filtered_tweets), set(hashtagResults)))
+        elif not hashtagResults:
+            tweetsList = list(Tweet.objects.filter(query_filter))
 
-    # print(list(tweetsList)[0].__dict__)
+    print(len(list(tweetsList)))
     if fromDate and toDate:
         tweetsList = [
             x for x in tweetsList if x.createdAt >= fromDate and x.createdAt <= toDate

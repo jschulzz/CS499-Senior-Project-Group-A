@@ -650,5 +650,6 @@ def startStopPull(request):
 # start pulling tweets initially with initial search dictionary parameters
 pullParameters = getPullParametersAsStrings(initialSearchDict)
 buildTwitterSearchQuery(initialSearchDict)
-pullThread = Thread(target=pull) #pull tweets asynchronously so that main thread isn't blocked
-pullThread.start()
+# pull tweets asynchronously so that main thread isn't blocked
+pullThread = Thread(target=pull)
+# pullThread.start()
