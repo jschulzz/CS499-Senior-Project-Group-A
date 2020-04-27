@@ -514,8 +514,7 @@ def insert(tweet):
 # input: existing tweet, tweet object with potentially new information
 # output: None
 def update(oldTweet, newTweet):
-    # if number of retweets or favorites is different between existing and new, update
-
+    #if number of retweets or favorites is different between existing and new, update
 
     if oldTweet.numRetweetsOriginal != newTweet["numRetweetsOriginal"]:
         oldTweet.numRetweetsOriginal = newTweet["numRetweetsOriginal"]
@@ -540,14 +539,10 @@ def addToDatabase(tweets):
     inserted, updated = 0, 0
     for tweet in tweets:
 
-        # if tweet is retweet exists in db or original tweet exists in db, update it in the db
-        if tweet["newUsername"]:
-            if Tweet.objects.filter(
-                newUser__username=tweet["newUsername"], createdAt=tweet["createdAt"]
-            ).exists():
-                t = Tweet.objects.get(
-                    newUser__username=tweet["newUsername"], createdAt=tweet["createdAt"]
-                )
+        #if tweet is retweet exists in db or original tweet exists in db, update it in the db
+        if tweet['newUsername']:
+            if Tweet.objects.filter(newUser__username=tweet['newUsername'], createdAt=tweet['createdAt']).exists():
+                t = Tweet.objects.get(newUser__username=tweet['newUsername'], createdAt=tweet['createdAt'])
                 update(t, tweet)
                 updated += 1
         elif Tweet.objects.filter(originalUser__username=tweet['originalUsername'], createdAt=tweet['createdAt']).exists():
@@ -627,7 +622,6 @@ def searchTwitter():
         done = False
     else:
         done = True
-
 
 # pulls relevant tweets from twitter by searching twitter and adding results to db (runs as bg task)
 # input: None

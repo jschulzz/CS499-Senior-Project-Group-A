@@ -33,6 +33,13 @@ pullParameters = (
     {}
 )  # dictionary with parameters to search twitter by in string form (to display in website)
 
+# define lambda functions for custom sorting
+sortingFunctions = {
+        'Date Created': lambda k: k.createdAt,
+        'Retweets': lambda k: k.numRetweetsNew if k.numRetweetsNew else k.numRetweetsOriginal,
+        'Favorites': lambda k: k.numFavoritesNew if k.numFavoritesNew else k.numFavoritesOriginal
+}
+
 # the search field is for users, hashtags, and keywords, so we will split those up
 def splitSearch(keywords):
     if keywords is None:
@@ -53,7 +60,7 @@ def pagify(tweetsList, limit, request):
 
 def renderIndexPage(request, tweets, pullStatus, error=None, warning=None):
     global pullParameters, dbSearchDict
-    print(dbSearchDict)
+
     if dbSearchDict["keywords"] == ['']:
         dbSearchDict["keywords"] = None
     return render(
@@ -63,6 +70,7 @@ def renderIndexPage(request, tweets, pullStatus, error=None, warning=None):
             "tweets": tweets,
             "twitterSearchDict": pullParameters,
             "dbSearchDict": dbSearchDict,
+            "sortFields": sortingFunctions.keys(),
             "pulling": pullStatus,
             "warning": warning,
             "error": error,
@@ -88,20 +96,32 @@ def index(request):
         dbSearchDict["hashtags"] = hashtags
         dbSearchDict["keywords"] = keywords
 
+    # bot criteria
     if request.GET.get("botMax"):
         dbSearchDict["botMax"] = request.GET.get("botMax")
     if bool(request.GET.get("showUnscoredUsers", False)):
         dbSearchDict["showUnscoredUsers"] = True
 
+    # sort criteria
+    if request.GET.get("sortBy"):
+        dbSearchDict["sortBy"] = request.GET.get("sortBy")
+    if request.GET.get("sortOrder"):
+        dbSearchDict["sortOrder"] = request.GET.get("sortOrder")
+    else:
+        dbSearchDict["sortOrder"] = None
+
+    # date criteria
     if request.GET.get("to"):
         dbSearchDict["to"] = request.GET.get("to")
     if request.GET.get("from"):
         dbSearchDict["from"] = request.GET.get("from")
+
+    # get list of all tweets in db most recent to least
     tweetsList = Tweet.objects.all().order_by(
         "-createdAt"
-    )  # get list of all tweets in db most recent to least
-    if request.GET.get("page"):
+    )
 
+    if request.GET.get("page"):
         tweets = pagify(tweetsList, 24, request)
         return renderIndexPage(request, tweets, pulling["pulling"])
 
@@ -320,7 +340,15 @@ def index(request):
     elif toDate:
         tweetsList = [x for x in tweetsList if x.createdAt <= toDate]
 
-    tweetsList = sorted(tweetsList, key=lambda k: k.createdAt, reverse=True)
+    # find the correct sorting function and order
+    if request.GET.get("sortBy"):
+        sortFunc = sortingFunctions[request.GET.get("sortBy")]
+    else:
+        sortFunc = sortingFunctions['Date Created']
+    sortOrder = False if request.GET.get("sortOrder") else True
+
+    # get sorted tweets, paginate them, and return them
+    tweetsList = sorted(tweetsList, key=sortFunc, reverse=sortOrder)
     tweets = pagify(tweetsList, 24, request)
     return renderIndexPage(request, tweets, pulling["pulling"])
 
