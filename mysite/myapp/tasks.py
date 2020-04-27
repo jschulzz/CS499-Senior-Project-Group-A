@@ -4,6 +4,8 @@ from .models import Hashtag
 from .models import Url
 from .models import HashtagLog
 from .models import UrlLog
+from .RelevancyModel import RelevancyModel
+
 from django.shortcuts import redirect
 
 
@@ -164,6 +166,23 @@ pulling = {"pulling": True}
 
 # max before Twitter API errors bc of too complex query
 MAX_PARAMETERS = 50
+
+# calculate relevancy based on text statistics
+# loads a pre-trained model
+relevancyModel = RelevancyModel()
+relevantStatistics = ['syllableCount', 'lexiconCount', 'sentenceCount', 'fleschReadingEase', 'fleschKincaidGrade',
+                'gunningFog', 'smogIndex', 'automatedReadabilityIndex', 'colemanLiauIndex', 'linsearWriteFormula',
+                'daleChallReadabilityScore']
+
+def getRelevancyScore(text, textStats):
+    lowerText = str(text).lower()
+    if 'supreme court' in lowerText or 'scotus' in lowerText:
+        return 1
+    else:
+        relevantStatValues = []
+        for key in relevantStatistics:
+            relevantStatValues.append(textStats[key])
+        return relevancyModel.getRelevancy(relevantStatValues)
 
 # calculate text statistics about given text for insertion to DB
 # input: text to be analyzed
@@ -335,7 +354,7 @@ def buildTwitterSearchQuery(searchDict):
 
     # build queries with randomly selected keywords, hashtags, and accounts until there are no more parameters or the query has gotten too complex (then start new one)
     while len(keywordParameters) + len(hashtagParameters) + len(accountParameters) != 0:
-        query = "supreme court AND "
+        query = ""
         while (
             len(query.split(" "))
             < MAX_PARAMETERS - len(searchDict["notAccounts"]) - numDates - 1
@@ -554,15 +573,21 @@ def insert(tweet):
 
     textStatsOriginal = getTextStats(tweet["originalText"])
     textStatsComment = getTextStats(tweet["commentText"])
+
     # combine possibly None strings
     combined_text = "".join(filter(None, [tweet["originalText"], tweet["commentText"]]))
     textStatsCombined = getTextStats(combined_text)
+
+    # calculate the relevancy score
+    relevancyScore = getRelevancyScore(combined_text, textStatsCombined)
+
     # create tweet object and add to db
     t = Tweet(
         originalUser=originalUser,
         newUser=newUser,
         createdAt=tweet["createdAt"],
         isRetweet=tweet["isRetweet"],
+        relevancy=relevancyScore,
         originalText=tweet["originalText"],
         commentText=tweet["commentText"],
         numRetweetsOriginal=tweet["numRetweetsOriginal"],
@@ -689,14 +714,8 @@ def addToDatabase(tweets):
                 t = Tweet.objects.get(newUser__username=tweet['newUsername'], createdAt=tweet['createdAt'])
                 update(t, tweet)
                 updated += 1
-        elif Tweet.objects.filter(
-            originalUser__username=tweet["originalUsername"],
-            createdAt=tweet["createdAt"],
-        ).exists():
-            t = Tweet.objects.get(
-                originalUser__username=tweet["originalUsername"],
-                createdAt=tweet["createdAt"],
-            )
+        elif Tweet.objects.filter(originalUser__username=tweet['originalUsername'], createdAt=tweet['createdAt']).exists():
+            t = Tweet.objects.get(originalUser__username=tweet['originalUsername'], createdAt=tweet['createdAt'])
             update(t, tweet)
             updated += 1
         # otherwise (neither exist in db) add to db
@@ -715,7 +734,6 @@ def searchTwitter():
     global twitterSearchQueries, api, done, pulling
     done = False
     for idx, query in enumerate(twitterSearchQueries):
-
         # handle escaping
         if done or not pulling["pulling"]:
             break
@@ -731,14 +749,9 @@ def searchTwitter():
         while resultsSize:
             try:
                 if max_id >= 0:
-                    results = api.search(
-                        q=query,
-                        count=100,
-                        tweet_mode="extended",
-                        max_id=str(max_id - 1),
-                    )
+                    results = api.search(q=query, count=100,tweet_mode='extended', max_id=str(max_id - 1))
                 else:
-                    results = api.search(q=query, count=100, tweet_mode="extended")
+                    results = api.search(q=query, count=100, tweet_mode='extended')
 
                 # update number of results, break if needed
                 resultsSize = len(results)
@@ -807,6 +820,5 @@ def startStopPull(request):
 # start pulling tweets initially with initial search dictionary parameters
 pullParameters = getPullParametersAsStrings(initialSearchDict)
 buildTwitterSearchQuery(initialSearchDict)
-# pull tweets asynchronously so that main thread isn't blocked
-pullThread = Thread(target=pull)
-# pullThread.start()
+pullThread = Thread(target=pull) #pull tweets asynchronously so that main thread isn't blocked
+pullThread.start()

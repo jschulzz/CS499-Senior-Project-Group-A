@@ -131,6 +131,9 @@ class Tweet(models.Model):
     twitterQueryFromDate = models.TextField(max_length=5000)
     twitterQueryToDate = models.TextField(max_length=5000)
 
+    # relevancy
+    relevancy = models.FloatField(null=True)
+
 
 class HashtagLog(models.Model):
     tweet = models.ForeignKey(Tweet, on_delete=models.CASCADE)
