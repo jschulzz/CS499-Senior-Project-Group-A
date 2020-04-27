@@ -81,7 +81,6 @@ def renderIndexPage(request, tweets, pullStatus, error=None, warning=None):
 
 # home page controller
 def index(request):
-    print(request.GET)
     global currentTwitterSearchDict, tweetsList, pullParameters
     if not request.user.is_authenticated:
         return redirect("/login")
@@ -264,8 +263,7 @@ def index(request):
         keywordQueries = [
             Q(originalText__icontains=keyword) for keyword in dbSearchDict["keywords"]
         ]
-    
-    
+
     # Filters
     query_filter = Q()
     if botFilter is not None:
@@ -346,7 +344,9 @@ def index(request):
 def download(request):
     global tweetsList
 
-    filename = ''.join(["tweets_", datetime.now().strftime("%Y-%m-%d_%H.%M.%S"), '.csv'])
+    filename = "".join(
+        ["tweets_", datetime.now().strftime("%Y-%m-%d_%H.%M.%S"), ".csv"]
+    )
     response = HttpResponse(content_type="application/x-download")
     response["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
     response.write("\ufeff".encode("utf8"))
@@ -359,11 +359,15 @@ def download(request):
         "original screen name",
         "original user location",
         "original user verified",
+        "original user english bot score",
+        "original user universal bot score",
         "retweet",
         "retweeter username",
         "retweeter screen name",
         "retweeter location",
         "retweeter verified",
+        "retweeter english bot score",
+        "retweeter universal bot score",
         "text",
         "comment",
         # 'hashtags', 'urls', '#retweets','#favorites', '#retweets of retweet',
@@ -471,6 +475,8 @@ def download(request):
         newScreenName = None
         newLocation = None
         newVerifiedString = None
+        newBotScoreEnglish = None
+        newBotScoreUniversal = None
 
         # if retweet:
         # display yes or no in verified column for new user
@@ -484,6 +490,8 @@ def download(request):
             newUsername = tweet.newUser.username
             newScreenName = tweet.newUser.screenName
             newLocation = tweet.newUser.location
+            newBotScoreEnglish = tweet.newUser.botScoreEnglish
+            newBotScoreUniversal = tweet.newUser.botScoreUniversal
 
         # display yes or no in retweet column
         if tweet.isRetweet:
@@ -492,65 +500,10 @@ def download(request):
             isRetweetString = "no"
 
         # get sentiment scores of original text
-        sid_obj = SentimentIntensityAnalyzer()
-        sentiment_dict_original = sid_obj.polarity_scores(tweet.originalText)
-
         # combine comment text and original tezt and get sentiment scores for the combination
         commentText = ""
         if tweet.commentText:
             commentText = tweet.commentText
-        sentiment_dict_combined = sid_obj.polarity_scores(
-            tweet.originalText + commentText
-        )
-
-        # intialize all comment word processing to empty strings in case there is no comment text
-        cSyllableCount = ""
-        cLexiconCount = ""
-        cSentenceCount = ""
-        cFleschReadingEase = ""
-        cFleschKincaidGrade = ""
-        cGunningFog = ""
-        cSmogIndex = ""
-        cAutomatedReadabilityIndex = ""
-        cColemanLiauIndex = ""
-        cLinsearWriteFormula = ""
-        cDaleChallReadabilityScore = ""
-        cDifficultWords = ""
-        cTextStandard = ""
-
-        # if there is comment text, get language processing stats for comment text
-        if tweet.commentText != None:
-            cSyllableCount = textstat.syllable_count(tweet.commentText, lang="en_US")
-            cLexiconCount = textstat.lexicon_count(tweet.commentText, removepunct=True)
-            cSentenceCount = textstat.sentence_count(tweet.commentText)
-            cFleschReadingEase = textstat.flesch_reading_ease(tweet.commentText)
-            cFleschKincaidGrade = textstat.flesch_kincaid_grade(tweet.commentText)
-            cGunningFog = textstat.gunning_fog(tweet.commentText)
-            cSmogIndex = textstat.smog_index(tweet.commentText)
-            cAutomatedReadabilityIndex = textstat.automated_readability_index(
-                tweet.commentText
-            )
-            cColemanLiauIndex = textstat.coleman_liau_index(tweet.commentText)
-            cLinsearWriteFormula = textstat.linsear_write_formula(tweet.commentText)
-            cDaleChallReadabilityScore = textstat.dale_chall_readability_score(
-                tweet.commentText
-            )
-            cDifficultWords = textstat.difficult_words(tweet.commentText)
-            cTextStandard = textstat.text_standard(
-                tweet.commentText, float_output=False
-            )
-
-        # get sentiment scores for comment text
-        cNegSent = ""
-        cNeuSent = ""
-        cPosSent = ""
-        cCompoundSent = ""
-        if tweet.commentText:
-            sentiment_dict_comment = sid_obj.polarity_scores(tweet.commentText)
-            cNegSent = sentiment_dict_comment["neg"]
-            cNeuSent = sentiment_dict_comment["neu"]
-            cPosSent = sentiment_dict_comment["pos"]
-            cCompoundSent = sentiment_dict_comment["compound"]
 
         # write all information about the tweet, and its language processing stats to row in csv
         writer.writerow(
@@ -561,80 +514,80 @@ def download(request):
                 tweet.originalUser.screenName,
                 tweet.originalUser.location,
                 originalVerifiedString,
+                tweet.originalUser.botScoreEnglish,
+                tweet.originalUser.botScoreUniversal,
                 isRetweetString,
                 newUsername,
                 newScreenName,
                 newLocation,
                 newVerifiedString,
-                tweet.originalText,
-                tweet.commentText,
+                newBotScoreEnglish,
+                newBotScoreUniversal,
+                "".join(filter(None, ["'", tweet.originalText])),
+                "".join(filter(None, ["'", tweet.commentText])),
                 hashtagString,
                 urlString,
                 tweet.numRetweetsOriginal,
                 # tweet.numFavoritesOriginal, tweet.numRetweetsNew, tweet.numFavoritesNew,
                 tweet.numFavoritesOriginal,
                 tweet.numFavoritesNew,
-                textstat.syllable_count(tweet.originalText, lang="en_US"),
-                textstat.lexicon_count(tweet.originalText, removepunct=True),
-                textstat.sentence_count(tweet.originalText),
-                textstat.flesch_reading_ease(tweet.originalText),
-                textstat.flesch_kincaid_grade(tweet.originalText),
-                textstat.gunning_fog(tweet.originalText),
-                textstat.smog_index(tweet.originalText),
-                textstat.automated_readability_index(tweet.originalText),
-                textstat.coleman_liau_index(tweet.originalText),
-                textstat.linsear_write_formula(tweet.originalText),
-                textstat.dale_chall_readability_score(tweet.originalText),
-                textstat.difficult_words(tweet.originalText),
-                textstat.text_standard(tweet.originalText, float_output=False),
-                sentiment_dict_original["neg"],
-                sentiment_dict_original["neu"],
-                sentiment_dict_original["pos"],
-                sentiment_dict_original["compound"],
-                cSyllableCount,
-                cLexiconCount,
-                cSentenceCount,
-                cFleschReadingEase,
-                cFleschKincaidGrade,
-                cGunningFog,
-                cSmogIndex,
-                cAutomatedReadabilityIndex,
-                cColemanLiauIndex,
-                cLinsearWriteFormula,
-                cDaleChallReadabilityScore,
-                cDifficultWords,
-                cTextStandard,
-                cNegSent,
-                cNeuSent,
-                cPosSent,
-                cCompoundSent,
-                textstat.syllable_count(tweet.originalText + commentText, lang="en_US"),
-                textstat.lexicon_count(
-                    tweet.originalText + commentText, removepunct=True
-                ),
-                textstat.sentence_count(tweet.originalText + commentText),
-                textstat.flesch_reading_ease(tweet.originalText + commentText),
-                textstat.flesch_kincaid_grade(tweet.originalText + commentText),
-                textstat.gunning_fog(tweet.originalText + commentText),
-                textstat.smog_index(tweet.originalText + commentText),
-                textstat.automated_readability_index(tweet.originalText + commentText),
-                textstat.coleman_liau_index(tweet.originalText + commentText),
-                textstat.linsear_write_formula(tweet.originalText + commentText),
-                textstat.dale_chall_readability_score(tweet.originalText + commentText),
-                textstat.difficult_words(tweet.originalText + commentText),
-                textstat.text_standard(
-                    tweet.originalText + commentText, float_output=False
-                ),
-                sentiment_dict_combined["neg"],
-                sentiment_dict_combined["neu"],
-                sentiment_dict_combined["pos"],
-                sentiment_dict_combined["compound"],
+                tweet.original_syllable_count,
+                tweet.original_lexicon_count,
+                tweet.original_sentence_count,
+                tweet.original_flesch_reading_ease,
+                tweet.original_flesch_kincaid_grade,
+                tweet.original_gunning_fog,
+                tweet.original_smog_index,
+                tweet.original_automated_readability_index,
+                tweet.original_coleman_liau_index,
+                tweet.original_linsear_write_formula,
+                tweet.original_dale_chall_readability_score,
+                tweet.original_difficult_words,
+                tweet.original_text_standard,
+                tweet.original_negative_sentiment,
+                tweet.original_neutral_sentiment,
+                tweet.original_positive_sentiment,
+                tweet.original_overall_sentiment,
+                tweet.comment_syllable_count,
+                tweet.comment_lexicon_count,
+                tweet.comment_sentence_count,
+                tweet.comment_flesch_reading_ease,
+                tweet.comment_flesch_kincaid_grade,
+                tweet.comment_gunning_fog,
+                tweet.comment_smog_index,
+                tweet.comment_automated_readability_index,
+                tweet.comment_coleman_liau_index,
+                tweet.comment_linsear_write_formula,
+                tweet.comment_dale_chall_readability_score,
+                tweet.comment_difficult_words,
+                tweet.comment_text_standard,
+                tweet.comment_negative_sentiment,
+                tweet.comment_neutral_sentiment,
+                tweet.comment_positive_sentiment,
+                tweet.comment_overall_sentiment,
+                tweet.combined_syllable_count,
+                tweet.combined_lexicon_count,
+                tweet.combined_sentence_count,
+                tweet.combined_flesch_reading_ease,
+                tweet.combined_flesch_kincaid_grade,
+                tweet.combined_gunning_fog,
+                tweet.combined_smog_index,
+                tweet.combined_automated_readability_index,
+                tweet.combined_coleman_liau_index,
+                tweet.combined_linsear_write_formula,
+                tweet.combined_dale_chall_readability_score,
+                tweet.combined_difficult_words,
+                tweet.combined_text_standard,
+                tweet.combined_negative_sentiment,
+                tweet.combined_neutral_sentiment,
+                tweet.combined_positive_sentiment,
+                tweet.combined_overall_sentiment,
                 tweet.twitterQueryUsers,
                 tweet.twitterQueryNotUsers,
                 tweet.twitterQueryHashtags,
                 tweet.twitterQueryKeywords,
                 tweet.twitterQueryFromDate,
-                tweet.twitterQueryToDate,
+                tweet.twitterQueryToDate
             ]
         )
 
