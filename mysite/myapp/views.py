@@ -81,7 +81,6 @@ def renderIndexPage(request, tweets, pullStatus, error=None, warning=None):
 
 # home page controller
 def index(request):
-    print(request.GET)
     global currentTwitterSearchDict, tweetsList, pullParameters
     if not request.user.is_authenticated:
         return redirect("/login")
