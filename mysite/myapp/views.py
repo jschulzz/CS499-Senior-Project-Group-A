@@ -48,8 +48,6 @@ def pagify(tweetsList, limit, request):
     # only display x tweets per page
     paginator = Paginator(tweetsList, limit)
     page = request.GET.get("page")
-    print("Getting Page {}".format(page))
-    print(len(tweetsList))
     return paginator.get_page(page)
 
 
@@ -77,7 +75,7 @@ def index(request):
     print(request.GET)
     global currentTwitterSearchDict, tweetsList, pullParameters
     if not request.user.is_authenticated:
-        return redirect("login")
+        return redirect("/login")
         # refresh
     if request.GET.get("refresh"):  # refresh page aka display all tweets from db again
         if request.GET.get("refresh") == "true":
@@ -333,8 +331,9 @@ def index(request):
 def download(request):
     global tweetsList
 
+    filename = ''.join(["tweets_", datetime.now().strftime("%Y-%m-%d_%H.%M.%S"), '.csv'])
     response = HttpResponse(content_type="application/x-download")
-    response["Content-Disposition"] = 'attachment; filename="tweets.csv"'
+    response["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
     response.write("\ufeff".encode("utf8"))
 
     # set headers of csv

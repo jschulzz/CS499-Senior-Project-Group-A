@@ -33,7 +33,7 @@ twitter_app_auth = {
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
-api = tweepy.API(auth)
+api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
 
 bom = botometer.Botometer(
     wait_on_ratelimit=True, rapidapi_key=rapidapi_key, **twitter_app_auth
@@ -147,14 +147,11 @@ initialSearchDict["toDate"] = datetime.strftime(timezone.now(), "%Y-%m-%d")
 initialSearchDict["keywords"] = []
 
 twitterSearchQueries = []
-pullParameters = (
-    {}
-)  # dictionary with parameters to search twitter by in string form (to display in website)
-done = True  # true if gone through all results from search request, else false
-pulling = {
-    "pulling": True
-}  # if user has started pulling tweets, dict (mutable) so it can be accessed from view.py
-MAX_PARAMETERS = 50  # max before Twitter API errors bc of too complex query
+pullParameters = {} #dictionary with parameters to search twitter by in string form (to display in website)
+done = False  #true if gone through all results from search request, else false
+pulling = {'pulling': True} #if user has started pulling tweets, dict (mutable) so it can be accessed from view.py
+MAX_PARAMETERS = 50 #max before Twitter API errors bc of too complex query
+# convert the array value of a given dictionary key to a string with elements separated by spaces
 
 
 def getBotScores(username):
@@ -301,7 +298,8 @@ def buildTwitterSearchQuery(searchDict):
         twitterSearchQueries.append(query)
 
     pullParameters = getPullParametersAsStrings(searchDict)
-    done = True  # so new queries will immediately be searched for
+    done = False #so new queries will immediately be searched for
+
 
     # if any queries are too long, return False
     for query in twitterSearchQueries:
@@ -424,7 +422,6 @@ def parseTwitterResponse(response):
 # output: None
 def insert(tweet):
     global pullParameters
-    print("insert")
     newUser = None
     # if user is not already in db, add them to db
     if not User.objects.filter(username=tweet["originalUsername"]).exists():
@@ -517,9 +514,8 @@ def insert(tweet):
 # input: existing tweet, tweet object with potentially new information
 # output: None
 def update(oldTweet, newTweet):
-    print("update")
-
     # if number of retweets or favorites is different between existing and new, update
+
 
     if oldTweet.numRetweetsOriginal != newTweet["numRetweetsOriginal"]:
         oldTweet.numRetweetsOriginal = newTweet["numRetweetsOriginal"]
@@ -541,6 +537,7 @@ def update(oldTweet, newTweet):
 # input: list of distinct tweet dictionaries
 # output: None
 def addToDatabase(tweets):
+    inserted, updated = 0, 0
     for tweet in tweets:
 
         # if tweet is retweet exists in db or original tweet exists in db, update it in the db
@@ -552,19 +549,17 @@ def addToDatabase(tweets):
                     newUser__username=tweet["newUsername"], createdAt=tweet["createdAt"]
                 )
                 update(t, tweet)
-        elif Tweet.objects.filter(
-            originalUser__username=tweet["originalUsername"],
-            createdAt=tweet["createdAt"],
-        ).exists():
-            t = Tweet.objects.get(
-                originalUser__username=tweet["originalUsername"],
-                createdAt=tweet["createdAt"],
-            )
+                updated += 1
+        elif Tweet.objects.filter(originalUser__username=tweet['originalUsername'], createdAt=tweet['createdAt']).exists():
+            t = Tweet.objects.get(originalUser__username=tweet['originalUsername'], createdAt=tweet['createdAt'])
             update(t, tweet)
-
-        # otherwise (neither exist in db) add to db
+            updated += 1
+        #otherwise (neither exist in db) add to db
         else:
             insert(tweet)
+            inserted += 1
+
+    return inserted, updated
 
 
 # for each search query, uses tweepy to make twitter api search request,
@@ -574,43 +569,64 @@ def addToDatabase(tweets):
 def searchTwitter():
     global twitterSearchQueries, api, done, pulling
     done = False
-    # print("search:", twitterSearchQueries)
-    for query in twitterSearchQueries:
-        retries = 0
-        # iterate through every page (pause if hit rate limit)
-        try:
-            for page in tweepy.Cursor(
-                api.search,
-                q=query,
-                count=100,
-                tweet_mode="extended",
-                wait_on_rate_limit=True,
-                wait_on_rate_limit_notify=True,
-            ).pages():
-                if (
-                    done or not pulling["pulling"]
-                ):  # if new twitter search query built, stop this search run
-                    break
-                searchResults = []
-                # parse relevant information from response
-                tweets = parseTwitterResponse(page)
-                for tweetDict in [
-                    i for n, i in enumerate(tweets) if i not in tweets[n + 1 :]
-                ]:  # only add unique tweet to results
-                    searchResults.append(tweetDict)
-                addToDatabase(
-                    searchResults
-                )  # add results to db for every page so that db gets updated with new tweets to display often
-            if done:
-                break
-        except tweepy.TweepError as e:
-            print(e)
-            if retries > 2:
-                pulling["pulling"] = False
-                redirect("error")
-            retries += 1
+    for idx, query in enumerate(twitterSearchQueries):
 
-    done = True
+        # handle escaping
+        if (done or not pulling['pulling']):
+            break
+
+        retries = 0
+        inserted, updated = 0, 0
+
+        # If results only below a specific ID are, set max_id to that ID.
+        # else default to no upper limit, start from the most recent tweet matching the search query.
+        max_id = -1
+
+        resultsSize = 1
+        while (resultsSize):
+            try:
+                if max_id >= 0:
+                    results = api.search(q=query, count=100,tweet_mode='extended', max_id=str(max_id - 1))
+                else:
+                    results = api.search(q=query, count=100, tweet_mode='extended')
+
+                # update number of results, break if needed
+                resultsSize = len(results)
+                if not resultsSize or done or not pulling['pulling']:
+                    break
+
+                #parse relevant information from response
+                searchResults = []
+                tweets = parseTwitterResponse(results)
+                for tweetDict in [i for n, i in enumerate(tweets) if i not in tweets[n + 1:]]:   #only add unique tweet to results
+                    searchResults.append(tweetDict)
+
+                # add results to db for every page so that db gets updated with new tweets to display often
+                newIns, newUpd = addToDatabase(searchResults)
+                inserted += newIns
+                updated += newUpd
+
+                #sleeper to avoid 180 requests per 15 minute rate limit
+                time.sleep(12)
+
+                # update loop variable max_id
+                max_id = results[-1].id
+
+            except tweepy.TweepError as e:
+                print(e)
+                if retries > 2:
+                    pulling['pulling'] = False
+                    redirect("error")
+                retries += 1
+
+        print("Inserted %d tweets for Query %d" % (inserted, idx))
+        print("Updated %d tweets for Query %d" % (updated, idx))
+
+    # if this was stopped via startStopPull(), set done to False. Otherwise, we're done and we'll sleep in pull()
+    if not pulling['pulling']:
+        done = False
+    else:
+        done = True
 
 
 # pulls relevant tweets from twitter by searching twitter and adding results to db (runs as bg task)
@@ -619,17 +635,17 @@ def searchTwitter():
 def pull():
     global done, pulling
     while True:
-        # continuously try to pull new tweets
-        while pulling["pulling"]:
-            # if done getting all results from a search request
-            if done:
-                print("pulling")
-                # execute search request again
+        while pulling['pulling']:
+            if not done:
+                print("Pulling new tweets")
                 searchTwitter()
-                print("pulled")
-            # if not done getting all search results, wait 1 minute and then try again
+                print("Finished pulling new tweets")
+
+            #if done with searching, wait 12 hours and try again
+
             else:
-                time.sleep(60)
+                time.sleep(60*60*12)
+                done = False
 
 
 def startStopPull(request):
@@ -641,8 +657,6 @@ def startStopPull(request):
 # start pulling tweets initially with initial search dictionary parameters
 pullParameters = getPullParametersAsStrings(initialSearchDict)
 buildTwitterSearchQuery(initialSearchDict)
+pullThread = Thread(target=pull) #pull tweets asynchronously so that main thread isn't blocked
 
-pullThread = Thread(
-    target=pull
-)  # pull tweets asynchronously so that main thread isn't blocked
 pullThread.start()
