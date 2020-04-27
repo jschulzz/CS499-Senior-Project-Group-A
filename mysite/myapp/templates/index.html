@@ -5,7 +5,7 @@
 <title>SCOTUS Tweet Database</title>
 
 
-<body class="w3-light-grey w3-content" style="max-width:1600px">
+<body class="w3-light-grey">
     <!-- !PAGE CONTENT! -->
     <div class="w3-main">
         <!-- NAVBAR -->
@@ -39,16 +39,16 @@
                     <ul class="collapsible collapsible-accordion">
                         <li class="active">
                             <a class="collapsible-header">Search</a>
-                            <div class="collapsible-body">
-                                <ul>
-                                    <li class="center">
-                                        <input id="keywords" type="text" class="tweet-filter validate" name="keywords"
+                            <div class="collapsible-body row">
+                                <ul class="col m10 offset-m1">
+                                    <li>
+                                        <input id="keywords" type="text" class="validate" name="keywords"
                                             {% if request.GET.page == None %} value="{{ request.GET.keywords }}"
                                             {% elif dbSearchDict.keywords != None %} value="{{ dbSearchDict.keywords }}"
                                             {% endif %} placeholder="Keywords">
                                     </li>
 
-                                    <li class="center">
+                                    <li>
                                         <p class="row">
                                             <label class="col s6 center-align"><input value="OR" class="with-gap"
                                                     name="ANDOR" type="radio"
@@ -71,22 +71,42 @@
                     <ul class="collapsible collapsible-accordion">
                         <li class="active">
                             <a class="collapsible-header">Filters</a>
-                            <div class="collapsible-body">
-                                <ul>
+                            <div class="collapsible-body row">
+                                <ul class="col m10 offset-m1">
 
-                                    <li class="center">
-                                        <input type="text" class="tweet-filter datepicker" name="from"
+                                    <li>
+                                        <input type="text" class="datepicker" name="from"
                                             {% if request.GET.page == None %}value="{{ request.GET.from }}"
                                             {% elif dbSearchDict.from != None %}value="{{ dbSearchDict.from }}"
                                             {% endif %} placeholder="From Date">
                                     </li>
-                                    <li class="center">
-                                        <input type="text" class="tweet-filter datepicker" name="to"
+                                    <li>
+                                        <input type="text" class="datepicker" name="to"
                                             {% if request.GET.page == None %}value="{{ request.GET.to }}"
                                             {% elif dbSearchDict.to != None %}value="{{ dbSearchDict.to }}" {% endif %}
                                             placeholder="To Date">
                                     </li>
-
+                                    <li>
+                                        <label>Maximum Bot Score</label>
+                                        <div class="range-field">
+                                            <input type="range" name="botMax" min="0" max="100"
+                                                {% if request.GET.page == None %}value="{{ request.GET.botMax }}"
+                                                {% elif dbSearchDict.botMax != None %}value="{{ dbSearchDict.botMax }}"
+                                                {% endif %} />
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label>Show Unscored Users</label>
+                                        <div class="switch">
+                                            <label>
+                                                Hide
+                                                <input name="showUnscoredUsers" type="checkbox" value="True"
+                                                    {% if dbSearchDict.showUnscoredUsers %}checked {% endif %}>
+                                                <span class="lever"></span>
+                                                Show
+                                            </label>
+                                        </div>
+                                    </li>
                                 </ul>
                             </div>
                         </li>
@@ -130,7 +150,21 @@
                         </div>
                         <p>{{tweet.originalText|urlize}}</p>
                         <div class="row">
-                            <h5><b>Bot rating:</b><span id="bot-score"> 0.005</span></h5>
+                            <h5><b>Bot rating (English):</b>
+                                {% if tweet.originalUser.botScoreEnglish > 0 %}
+                                <span id="bot-score"> {% widthratio tweet.originalUser.botScoreEnglish 1 100 %}%</span>
+                                {% else %}
+                                <span id="bot-score">N/A</span>
+                                {% endif %}
+                            </h5>
+                            <h5><b>Bot rating (Universal):</b>
+                                {% if tweet.originalUser.botScoreEnglish > 0 %}
+                                <span id="bot-score">
+                                    {% widthratio tweet.originalUser.botScoreUniversal 1 100 %}%</span>
+                                {% else %}
+                                <span id="bot-score">N/A</span>
+                                {% endif %}
+                            </h5>
                         </div>
                         <table class="striped">
                             <thead>
@@ -362,7 +396,8 @@
         $('.collapsible').collapsible();
         $('select').formSelect();
         $('.datepicker').datepicker({
-            container: $("body")
+            container: $("body"),
+            showClearBtn: true
         });
         $('#change-query-modal')
             .modal({

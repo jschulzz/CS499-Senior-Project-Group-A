@@ -53,6 +53,9 @@ def pagify(tweetsList, limit, request):
 
 def renderIndexPage(request, tweets, pullStatus, error=None, warning=None):
     global pullParameters, dbSearchDict
+    print(dbSearchDict)
+    if dbSearchDict["keywords"] == ['']:
+        dbSearchDict["keywords"] = None
     return render(
         request,
         "index.html",
@@ -69,6 +72,7 @@ def renderIndexPage(request, tweets, pullStatus, error=None, warning=None):
 
 # home page controller
 def index(request):
+    print(request.GET)
     global currentTwitterSearchDict, tweetsList, pullParameters
     if not request.user.is_authenticated:
         return redirect("/login")
@@ -83,6 +87,11 @@ def index(request):
         dbSearchDict["users"] = users
         dbSearchDict["hashtags"] = hashtags
         dbSearchDict["keywords"] = keywords
+
+    if request.GET.get("botMax"):
+        dbSearchDict["botMax"] = request.GET.get("botMax")
+    if bool(request.GET.get("showUnscoredUsers", False)):
+        dbSearchDict["showUnscoredUsers"] = True
 
     if request.GET.get("to"):
         dbSearchDict["to"] = request.GET.get("to")
@@ -184,6 +193,8 @@ def index(request):
     dbSearchDict["keywords"] = keywords
     dbSearchDict["to"] = request.GET.get("to")
     dbSearchDict["from"] = request.GET.get("from")
+    dbSearchDict["botMax"] = request.GET.get("botMax")
+    dbSearchDict["showUnscoredUsers"] = bool(request.GET.get("showUnscoredUsers", False))
 
     # get tweets to display
     tweetsList = Tweet.objects.all().order_by(
@@ -198,6 +209,9 @@ def index(request):
 
     fromDate = None
     toDate = None
+    botMax = None
+    botFilter = None
+    showUnscoredUsersFilter = None
 
     # get entries from search form
     if dbSearchDict["from"]:
@@ -208,6 +222,12 @@ def index(request):
         toDate = datetime.strptime(request.GET.get("to"), "%b %d, %Y").replace(
             tzinfo=pytz.UTC
         )
+    
+    if not dbSearchDict["showUnscoredUsers"]:
+        showUnscoredUsersFilter = Q(originalUser__botScoreEnglish__gte=0, originalUser__botScoreUniversal__gte=0)
+    if dbSearchDict["botMax"]:
+        botMax = int(dbSearchDict["botMax"]) / 100
+        botFilter = Q(originalUser__botScoreEnglish__lte=botMax, originalUser__botScoreUniversal__lte=botMax)
     if dbSearchDict["users"]:
         userQueries = [Q(originalUser__username=user) for user in dbSearchDict["users"]]
     if dbSearchDict["hashtags"]:
@@ -223,6 +243,14 @@ def index(request):
         keywordQueries = [
             Q(originalText__icontains=keyword) for keyword in dbSearchDict["keywords"]
         ]
+    
+    
+    # Filters
+    filteredTweets = Tweet.objects.all()
+    if botFilter is not None:
+        filteredTweets = filteredTweets.filter(botFilter)
+    if showUnscoredUsersFilter is not None:
+        filteredTweets = filteredTweets.filter(showUnscoredUsersFilter)
 
     # OR fields
     if request.GET.get("ANDOR") == "OR" or request.GET.get("ANDOR") == None:
@@ -235,9 +263,7 @@ def index(request):
             for item in queries:  # OR all queries together
                 query |= item
 
-            tweetsList = list(
-                Tweet.objects.filter(query)
-            )  # put result of filter in list
+            tweetsList = list(filteredTweets.filter(query))  # put result of filter in list
 
             tweetsList += hashtagResults  # add the hashtag results to list
 
@@ -255,16 +281,16 @@ def index(request):
             query = userQueries.pop()
             for item in userQueries:
                 query |= item
-
-            usersList = list(Tweet.objects.filter(query))
+            
+            usersList = list(filteredTweets.filter(query))
 
         # get results of keyword filter
         if keywordQueries:
             query = keywordQueries.pop()
             for item in keywordQueries:
                 query |= item
-
-            keywordList = list(Tweet.objects.filter(query))
+            
+            keywordList = list(filteredTweets.filter(query))
 
         # if at least 2 of the user, hashtag, or keyword fields have entries, AND results of users, keywords, hashtags queries
         # if none or 1 of the fields is filled out, treat like OR instead
@@ -284,8 +310,7 @@ def index(request):
         else:
             tweetsList = usersList + keywordList + hashtagResults
 
-    tweetsList = sorted(tweetsList, key=lambda k: k.createdAt, reverse=True)
-
+    # print(list(tweetsList)[0].__dict__)
     if fromDate and toDate:
         tweetsList = [
             x for x in tweetsList if x.createdAt >= fromDate and x.createdAt <= toDate
@@ -295,6 +320,7 @@ def index(request):
     elif toDate:
         tweetsList = [x for x in tweetsList if x.createdAt <= toDate]
 
+    tweetsList = sorted(tweetsList, key=lambda k: k.createdAt, reverse=True)
     tweets = pagify(tweetsList, 24, request)
     return renderIndexPage(request, tweets, pulling["pulling"])
 
