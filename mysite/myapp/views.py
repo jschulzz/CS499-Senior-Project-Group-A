@@ -523,8 +523,8 @@ def download(request):
                 newVerifiedString,
                 newBotScoreEnglish,
                 newBotScoreUniversal,
-                tweet.originalText,
-                tweet.commentText,
+                "".join(filter(None, ["'", tweet.originalText])),
+                "".join(filter(None, ["'", tweet.commentText])),
                 hashtagString,
                 urlString,
                 tweet.numRetweetsOriginal,
@@ -587,7 +587,7 @@ def download(request):
                 tweet.twitterQueryHashtags,
                 tweet.twitterQueryKeywords,
                 tweet.twitterQueryFromDate,
-                tweet.twitterQueryToDate,
+                tweet.twitterQueryToDate
             ]
         )
 
