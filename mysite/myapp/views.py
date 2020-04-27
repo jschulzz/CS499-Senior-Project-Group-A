@@ -43,7 +43,7 @@ sortingFunctions = {
 
 # the search field is for users, hashtags, and keywords, so we will split those up
 def splitSearch(keywords):
-    if keywords is None:
+    if not keywords:
         return [], [], []
     terms = [x.strip() for x in keywords.split(",")]
     users = [x.split("@")[1] for x in terms if "@" in x]
@@ -265,6 +265,8 @@ def index(request):
         ]
 
     # Filters
+
+    # bot filters always apply
     query_filter = Q()
     if botFilter is not None:
         query_filter &= botFilter
@@ -282,16 +284,22 @@ def index(request):
 
         # combine OR filter with our other filters
         query_filter &= or_filter
+        
+        # return results depending on situation
         if queries:
             # put result of filter in list, and add hashtag results
             tweetsList = list(Tweet.objects.filter(query_filter))  
             tweetsList += hashtagResults 
-
         # if no user or keyword entries but hashtag entries
         elif hashtagResults:
             tweetsList = hashtagResults
-        else:
+        # no users, keywords, or hashtags, but they asked for hashtag
+        # this means requested hastag doesn't exist in DB
+        elif dbSearchDict["hashtags"]:
             tweetsList = []
+        # no queries and no hashtag results, means nothing entered in search box
+        else:
+            tweetsList = list(Tweet.objects.filter(query_filter))
 
     # AND fields
     else:
@@ -309,13 +317,15 @@ def index(request):
         query_filter &= keyword_query 
 
         print(query_filter)
+
         if hashtagResults:
             filtered_tweets = list(Tweet.objects.filter(query_filter))
             tweetsList = list(set.intersection(set(filtered_tweets), set(hashtagResults)))
-        elif not hashtagResults:
+        elif dbSearchDict["hashtags"]:
+            tweetsList = []
+        else:
             tweetsList = list(Tweet.objects.filter(query_filter))
-
-    print(len(list(tweetsList)))
+    
     if fromDate and toDate:
         tweetsList = [
             x for x in tweetsList if x.createdAt >= fromDate and x.createdAt <= toDate
@@ -324,7 +334,6 @@ def index(request):
         tweetsList = [x for x in tweetsList if x.createdAt >= fromDate]
     elif toDate:
         tweetsList = [x for x in tweetsList if x.createdAt <= toDate]
-
     # find the correct sorting function and order
     if request.GET.get("sortBy"):
         sortFunc = sortingFunctions[request.GET.get("sortBy")]
@@ -333,6 +342,7 @@ def index(request):
     sortOrder = False if request.GET.get("sortOrder") else True
 
     # get sorted tweets, paginate them, and return them
+    print("\nSearch Yielded {} results\n".format(len(tweetsList)))
     tweetsList = sorted(tweetsList, key=sortFunc, reverse=sortOrder)
     tweets = pagify(tweetsList, 24, request)
     return renderIndexPage(request, tweets, pulling["pulling"])
