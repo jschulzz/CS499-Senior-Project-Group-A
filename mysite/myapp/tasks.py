@@ -152,11 +152,18 @@ initialSearchDict["toDate"] = datetime.strftime(timezone.now(), "%Y-%m-%d")
 initialSearchDict["keywords"] = []
 
 twitterSearchQueries = []
-pullParameters = {} #dictionary with parameters to search twitter by in string form (to display in website)
-done = False  #true if gone through all results from search request, else false
-pulling = {'pulling': True} #if user has started pulling tweets, dict (mutable) so it can be accessed from view.py
-MAX_PARAMETERS = 50 #max before Twitter API errors bc of too complex query
-# convert the array value of a given dictionary key to a string with elements separated by spaces
+
+# dictionary with parameters to search twitter by in string form (to display in website)
+pullParameters = {}
+
+# true if gone through all results from search request, else false
+done = False
+
+# if user has started pulling tweets, dict (mutable) so it can be accessed from view.py
+pulling = {"pulling": True}
+
+# max before Twitter API errors bc of too complex query
+MAX_PARAMETERS = 50
 
 # calculate text statistics about given text for insertion to DB
 # input: text to be analyzed
@@ -164,24 +171,24 @@ MAX_PARAMETERS = 50 #max before Twitter API errors bc of too complex query
 def getTextStats(text):
     if text is None:
         return {
-        "syllableCount": None,
-        "lexiconCount": None,
-        "sentenceCount": None,
-        "fleschReadingEase": None,
-        "fleschKincaidGrade": None,
-        "gunningFog": None,
-        "smogIndex": None,
-        "automatedReadabilityIndex": None,
-        "colemanLiauIndex": None,
-        "linsearWriteFormula": None,
-        "daleChallReadabilityScore": None,
-        "difficultWords": None,
-        "textStandard": None,
-        "negative_sentiment": None,
-        "neutral_sentiment":None,
-        "positive_sentiment": None,
-        "overall_sentiment": None,
-    }
+            "syllableCount": None,
+            "lexiconCount": None,
+            "sentenceCount": None,
+            "fleschReadingEase": None,
+            "fleschKincaidGrade": None,
+            "gunningFog": None,
+            "smogIndex": None,
+            "automatedReadabilityIndex": None,
+            "colemanLiauIndex": None,
+            "linsearWriteFormula": None,
+            "daleChallReadabilityScore": None,
+            "difficultWords": None,
+            "textStandard": None,
+            "negative_sentiment": None,
+            "neutral_sentiment": None,
+            "positive_sentiment": None,
+            "overall_sentiment": None,
+        }
     syllableCount = textstat.syllable_count(text, lang="en_US")
     lexiconCount = textstat.lexicon_count(text, removepunct=True)
     sentenceCount = textstat.sentence_count(text)
@@ -216,6 +223,7 @@ def getTextStats(text):
         "positive_sentiment": sentiment_dict["pos"],
         "overall_sentiment": sentiment_dict["compound"],
     }
+
 
 # find twitter Botometer bot scores of a given user
 # input: username of account in question
@@ -298,11 +306,13 @@ def getPullParametersAsStrings(searchDict):
 # input:search dict
 # output: None
 def buildTwitterSearchQuery(searchDict):
-    global twitterSearchQueries  # global so that the pull function always uses the most up to date queries
+    # global so that the pull function always uses the most up to date queries
+    global twitterSearchQueries
     global done
     global pullParameters
 
-    twitterSearchQueries = []  # clear previous queries
+    # clear previous queries
+    twitterSearchQueries = []
     keywordParameters = []
     hashtagParameters = []
     accountParameters = []
@@ -545,7 +555,7 @@ def insert(tweet):
     textStatsOriginal = getTextStats(tweet["originalText"])
     textStatsComment = getTextStats(tweet["commentText"])
     # combine possibly None strings
-    combined_text = ''.join(filter(None, [tweet["originalText"], tweet["commentText"]]))
+    combined_text = "".join(filter(None, [tweet["originalText"], tweet["commentText"]]))
     textStatsCombined = getTextStats(combined_text)
     # create tweet object and add to db
     t = Tweet(
@@ -573,10 +583,14 @@ def insert(tweet):
         original_flesch_kincaid_grade=textStatsOriginal["fleschKincaidGrade"],
         original_gunning_fog=textStatsOriginal["gunningFog"],
         original_smog_index=textStatsOriginal["smogIndex"],
-        original_automated_readability_index=textStatsOriginal["automatedReadabilityIndex"],
+        original_automated_readability_index=textStatsOriginal[
+            "automatedReadabilityIndex"
+        ],
         original_coleman_liau_index=textStatsOriginal["colemanLiauIndex"],
         original_linsear_write_formula=textStatsOriginal["linsearWriteFormula"],
-        original_dale_chall_readability_score=textStatsOriginal["daleChallReadabilityScore"],
+        original_dale_chall_readability_score=textStatsOriginal[
+            "daleChallReadabilityScore"
+        ],
         original_difficult_words=textStatsOriginal["difficultWords"],
         original_text_standard=textStatsOriginal["textStandard"],
         original_negative_sentiment=textStatsOriginal["negative_sentiment"],
@@ -590,10 +604,14 @@ def insert(tweet):
         comment_flesch_kincaid_grade=textStatsComment["fleschKincaidGrade"],
         comment_gunning_fog=textStatsComment["gunningFog"],
         comment_smog_index=textStatsComment["smogIndex"],
-        comment_automated_readability_index=textStatsComment["automatedReadabilityIndex"],
+        comment_automated_readability_index=textStatsComment[
+            "automatedReadabilityIndex"
+        ],
         comment_coleman_liau_index=textStatsComment["colemanLiauIndex"],
         comment_linsear_write_formula=textStatsComment["linsearWriteFormula"],
-        comment_dale_chall_readability_score=textStatsComment["daleChallReadabilityScore"],
+        comment_dale_chall_readability_score=textStatsComment[
+            "daleChallReadabilityScore"
+        ],
         comment_difficult_words=textStatsComment["difficultWords"],
         comment_text_standard=textStatsComment["textStandard"],
         comment_negative_sentiment=textStatsComment["negative_sentiment"],
@@ -607,10 +625,14 @@ def insert(tweet):
         combined_flesch_kincaid_grade=textStatsCombined["fleschKincaidGrade"],
         combined_gunning_fog=textStatsCombined["gunningFog"],
         combined_smog_index=textStatsCombined["smogIndex"],
-        combined_automated_readability_index=textStatsCombined["automatedReadabilityIndex"],
+        combined_automated_readability_index=textStatsCombined[
+            "automatedReadabilityIndex"
+        ],
         combined_coleman_liau_index=textStatsCombined["colemanLiauIndex"],
         combined_linsear_write_formula=textStatsCombined["linsearWriteFormula"],
-        combined_dale_chall_readability_score=textStatsCombined["daleChallReadabilityScore"],
+        combined_dale_chall_readability_score=textStatsCombined[
+            "daleChallReadabilityScore"
+        ],
         combined_difficult_words=textStatsCombined["difficultWords"],
         combined_text_standard=textStatsCombined["textStandard"],
         combined_negative_sentiment=textStatsCombined["negative_sentiment"],
@@ -667,11 +689,17 @@ def addToDatabase(tweets):
                 t = Tweet.objects.get(newUser__username=tweet['newUsername'], createdAt=tweet['createdAt'])
                 update(t, tweet)
                 updated += 1
-        elif Tweet.objects.filter(originalUser__username=tweet['originalUsername'], createdAt=tweet['createdAt']).exists():
-            t = Tweet.objects.get(originalUser__username=tweet['originalUsername'], createdAt=tweet['createdAt'])
+        elif Tweet.objects.filter(
+            originalUser__username=tweet["originalUsername"],
+            createdAt=tweet["createdAt"],
+        ).exists():
+            t = Tweet.objects.get(
+                originalUser__username=tweet["originalUsername"],
+                createdAt=tweet["createdAt"],
+            )
             update(t, tweet)
             updated += 1
-        #otherwise (neither exist in db) add to db
+        # otherwise (neither exist in db) add to db
         else:
             insert(tweet)
             inserted += 1
@@ -689,7 +717,7 @@ def searchTwitter():
     for idx, query in enumerate(twitterSearchQueries):
 
         # handle escaping
-        if (done or not pulling['pulling']):
+        if done or not pulling["pulling"]:
             break
 
         retries = 0
@@ -700,22 +728,29 @@ def searchTwitter():
         max_id = -1
 
         resultsSize = 1
-        while (resultsSize):
+        while resultsSize:
             try:
                 if max_id >= 0:
-                    results = api.search(q=query, count=100,tweet_mode='extended', max_id=str(max_id - 1))
+                    results = api.search(
+                        q=query,
+                        count=100,
+                        tweet_mode="extended",
+                        max_id=str(max_id - 1),
+                    )
                 else:
-                    results = api.search(q=query, count=100, tweet_mode='extended')
+                    results = api.search(q=query, count=100, tweet_mode="extended")
 
                 # update number of results, break if needed
                 resultsSize = len(results)
-                if not resultsSize or done or not pulling['pulling']:
+                if not resultsSize or done or not pulling["pulling"]:
                     break
 
-                #parse relevant information from response
+                # parse relevant information from response
                 searchResults = []
                 tweets = parseTwitterResponse(results)
-                for tweetDict in [i for n, i in enumerate(tweets) if i not in tweets[n + 1:]]:   #only add unique tweet to results
+                for tweetDict in [
+                    i for n, i in enumerate(tweets) if i not in tweets[n + 1 :]
+                ]:  # only add unique tweet to results
                     searchResults.append(tweetDict)
 
                 # add results to db for every page so that db gets updated with new tweets to display often
@@ -723,7 +758,7 @@ def searchTwitter():
                 inserted += newIns
                 updated += newUpd
 
-                #sleeper to avoid 180 requests per 15 minute rate limit
+                # sleeper to avoid 180 requests per 15 minute rate limit
                 time.sleep(12)
 
                 # update loop variable max_id
