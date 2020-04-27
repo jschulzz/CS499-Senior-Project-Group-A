@@ -24,6 +24,8 @@ class User(models.Model):
     screenName = models.CharField(max_length=100) #Twitter screen names can be no longer than 50 characters
     location = models.CharField(max_length=200) #Twitter bios can be no longer than 160 characters
     isVerified = models.BooleanField()
+    botScoreEnglish = models.FloatField(default=-1)
+    botScoreUniversal = models.FloatField(default=-1)
 
 class Hashtag(models.Model):
     hashtagText = models.TextField(max_length=500) #Tweet that is just a hashtag

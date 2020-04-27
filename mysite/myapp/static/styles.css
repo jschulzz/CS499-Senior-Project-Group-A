@@ -11,10 +11,25 @@ th {
 	font-family: "Helvetica Neue", sans-serif;
 }
 
-.tweet-filter {
-	background-color: white !important;
-	border-radius: 5px !important;
-	border: 1px solid #9e9e9e !important;
+.outside-sidebar {
+	padding-left: 320px;
+}
+
+.sidenav {
+	margin-top: 65px;
+}
+
+li.tweet-filter,
+input.tweet-filter {
+	width: 85% !important;
+}
+button.tweet-filter {
+	width: 95% !important;
+}
+
+span.value {
+	margin-top: -9px !important;
+	margin-left: 1px !important;
 }
 
 .grid-sizer,
@@ -35,14 +50,12 @@ th {
 	border-radius: 0 0 10px 10px !important;
 }
 
-
 .tweet-stats {
-    text-overflow: ellipsis;
-    margin-bottom: 0;
+	text-overflow: ellipsis;
+	margin-bottom: 0;
 }
 .card-content {
 	overflow: auto !important;
-	/* max-height: 75% !important; */
 }
 
 .inline-icon {
