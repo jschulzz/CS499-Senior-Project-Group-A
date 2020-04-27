@@ -92,6 +92,7 @@
                                             <input type="range" name="botMax" min="0" max="100"
                                                 {% if request.GET.page == None %}value="{{ request.GET.botMax }}"
                                                 {% elif dbSearchDict.botMax != None %}value="{{ dbSearchDict.botMax }}"
+                                                {% else %}value="100"
                                                 {% endif %} />
                                         </div>
                                     </li>
@@ -475,7 +476,7 @@
                                 </div>
                             </div>
                             <!-- <span class="grey-text text-darken-4"> -->
-                            <p>{{tweet.commentText|urlize}}</p>
+                            <p>{{tweet.originalText|urlize}}</p>
                             <!-- </span> -->
                         </div>
                         <div class="card-action tweet-stats row valign-wrapper">

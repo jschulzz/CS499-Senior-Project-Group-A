@@ -335,7 +335,7 @@ def buildTwitterSearchQuery(searchDict):
 
     # build queries with randomly selected keywords, hashtags, and accounts until there are no more parameters or the query has gotten too complex (then start new one)
     while len(keywordParameters) + len(hashtagParameters) + len(accountParameters) != 0:
-        query = ""
+        query = "supreme court AND "
         while (
             len(query.split(" "))
             < MAX_PARAMETERS - len(searchDict["notAccounts"]) - numDates - 1
