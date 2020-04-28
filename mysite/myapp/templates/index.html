@@ -49,7 +49,7 @@
                                     </li>
 
                                     <li>
-                                        <p class="row">
+                                        <p class="row" style="margin-bottom: 0em;">
                                             <label class="col s6 center-align"><input value="OR" class="with-gap"
                                                     name="ANDOR" type="radio"
                                                     {% if request.GET.ANDOR == "OR" or request.GET.ANDOR == None %}
@@ -106,6 +106,16 @@
                                                 <span class="lever"></span>
                                                 Show
                                             </label>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label>Minimum Relevancy Score</label>
+                                        <div class="range-field">
+                                            <input type="range" name="relevancyMin" min="0" max="100"
+                                                {% if request.GET.page == None %}value="{{ request.GET.relevancyMin }}"
+                                                {% elif dbSearchDict.relevancyMin != None %}value="{{ dbSearchDict.relevancyMin }}"
+                                                {% else %}value="100"
+                                                {% endif %} />
                                         </div>
                                     </li>
                                 </ul>
@@ -199,6 +209,9 @@
                                 {% else %}
                                 <span id="bot-score">N/A</span>
                                 {% endif %}
+                            </h5>
+                            <h5><b>Relevancy Score:</b>
+                                <span id="relevancy-score">{% widthratio tweet.relevancy 1 100 %}%</span>
                             </h5>
                         </div>
                         <ul class="collapsible">
