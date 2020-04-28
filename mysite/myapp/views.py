@@ -102,6 +102,10 @@ def index(request):
     if bool(request.GET.get("showUnscoredUsers", False)):
         dbSearchDict["showUnscoredUsers"] = True
 
+    # relevancy criteria
+    if request.GET.get("relevancyMin"):
+        dbSearchDict["relevancyMin"] = request.GET.get("relevancyMin")
+
     # sort criteria
     if request.GET.get("sortBy"):
         dbSearchDict["sortBy"] = request.GET.get("sortBy")
@@ -214,6 +218,7 @@ def index(request):
     dbSearchDict["to"] = request.GET.get("to")
     dbSearchDict["from"] = request.GET.get("from")
     dbSearchDict["botMax"] = request.GET.get("botMax")
+    dbSearchDict["relevancyMin"] = request.GET.get("relevancyMin")
     dbSearchDict["showUnscoredUsers"] = bool(request.GET.get("showUnscoredUsers", False))
 
     # get tweets to display
@@ -232,6 +237,8 @@ def index(request):
     botMax = None
     botFilter = None
     showUnscoredUsersFilter = None
+    relevancyMin = None
+    relevancyFilter = None
 
     # get entries from search form
     if dbSearchDict["from"]:
@@ -250,6 +257,9 @@ def index(request):
         botFilter = Q(originalUser__botScoreEnglish__lte=botMax, originalUser__botScoreUniversal__lte=botMax)
     if dbSearchDict["users"]:
         userQueries = [Q(originalUser__username=user) for user in dbSearchDict["users"]]
+    if dbSearchDict["relevancyMin"]:
+        relevancyMin = int(dbSearchDict["relevancyMin"]) / 100
+        relevancyFilter = Q(relevancy__gte=relevancyMin)
     if dbSearchDict["hashtags"]:
         for hashtag in list(part for part in dbSearchDict["hashtags"] if part != ""):
             hashtagResults += [
@@ -273,7 +283,10 @@ def index(request):
     if showUnscoredUsersFilter is not None:
         query_filter &= showUnscoredUsersFilter
 
-    
+    # relevancy filter
+    if relevancyFilter is not None:
+        query_filter &= relevancyFilter
+
     # OR fields
     if request.GET.get("ANDOR") == "OR" or request.GET.get("ANDOR") == None:
         # join all queries together
