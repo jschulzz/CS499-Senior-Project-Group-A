@@ -517,10 +517,22 @@ def parseTwitterResponse(response):
 # output: None
 def insert(tweet):
     global pullParameters
+
+    textStatsOriginal = getTextStats(tweet["originalText"])
+    textStatsComment = getTextStats(tweet["commentText"])
+
+    # combine possibly None strings
+    combined_text = "".join(filter(None, [tweet["originalText"], tweet["commentText"]]))
+    textStatsCombined = getTextStats(combined_text)
+
+    # calculate the relevancy score
+    relevancyScore = getRelevancyScore(combined_text, textStatsCombined)
     newUser = None
     # if user is not already in db, add them to db
     if not User.objects.filter(username=tweet["originalUsername"]).exists():
-        english_score, universal_score = getBotScores(tweet["originalUsername"])
+        english_score, universal_score = -1, -1
+        if relevancyScore > 0.6:
+            english_score, universal_score = getBotScores(tweet["originalUsername"])
         originalUser = User(
             username=tweet["originalUsername"],
             screenName=tweet["originalScreenName"],
@@ -535,7 +547,9 @@ def insert(tweet):
 
     if tweet["newUsername"] != None:
         if not User.objects.filter(username=tweet["newUsername"]).exists():
-            english_score, universal_score = getBotScores(tweet["newUsername"])
+            english_score, universal_score = -1, -1
+            if relevancyScore > 0.6:
+                english_score, universal_score = getBotScores(tweet["originalUsername"])
             newUser = User(
                 username=tweet["newUsername"],
                 screenName=tweet["newScreenName"],
@@ -571,15 +585,7 @@ def insert(tweet):
             url = Url.objects.filter(urlText=u)[0]
         urls.append(url)
 
-    textStatsOriginal = getTextStats(tweet["originalText"])
-    textStatsComment = getTextStats(tweet["commentText"])
 
-    # combine possibly None strings
-    combined_text = "".join(filter(None, [tweet["originalText"], tweet["commentText"]]))
-    textStatsCombined = getTextStats(combined_text)
-
-    # calculate the relevancy score
-    relevancyScore = getRelevancyScore(combined_text, textStatsCombined)
 
     # create tweet object and add to db
     t = Tweet(
