@@ -87,8 +87,8 @@ DATABASES = {
         }
 }
 
-LOGIN_REDIRECT_URL = '/scotustwitter'
-LOGOUT_REDIRECT_URL = '/scotustwitter'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
