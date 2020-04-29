@@ -51,7 +51,7 @@ class ScreenTests(LiveServerTestCase):
         login = self.selenium.find_element_by_xpath("//button[@type='submit']")
         login.click()
 
-        assert (self.selenium.current_url == self.live_server_url + '/scotustwitter/')
+        assert (self.selenium.current_url == self.live_server_url + '/')
 
     # Tests expanding tweet details
     # Should confirm tweet details are shown
@@ -147,7 +147,7 @@ class ScreenTests(LiveServerTestCase):
         login = self.selenium.find_element_by_xpath("//button[@type='submit']")
         login.click()
 
-        assert (self.selenium.current_url == self.live_server_url + '/scotustwitter/')
+        assert (self.selenium.current_url == self.live_server_url + '/')
 
 # Filtering Tests
 class FilteringTests(LiveServerTestCase):

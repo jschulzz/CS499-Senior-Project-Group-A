@@ -87,7 +87,7 @@ def index(request):
         # refresh
     if request.GET.get("refresh"):  # refresh page aka display all tweets from db again
         if request.GET.get("refresh") == "true":
-            return redirect("/scotustwitter")
+            return redirect("/")
 
     # get what users entered into search bars (so we can redisplay them in the search bars when a download occurs)
     if request.GET.get("keywords"):
@@ -201,7 +201,7 @@ def index(request):
             )
 
         if buildTwitterSearchQuery(currentTwitterSearchDict):
-            return redirect("/scotustwitter")
+            return redirect("/")
         else:
             return renderIndexPage(
                 request,
