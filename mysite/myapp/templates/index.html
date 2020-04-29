@@ -4,101 +4,517 @@
 
 <title>SCOTUS Tweet Database</title>
 
-<style>
-body,h2,h3,h4,h5,h6 {font-family: "Raleway", sans-serif}
-h1, th {font-family: "Helvetica Neue", sans-serif}
-</style>
 
-<body class="w3-light-grey w3-content" style="max-width:1600px">
+<body class="w3-light-grey">
     <!-- !PAGE CONTENT! -->
     <div class="w3-main">
-        <div class="w3-container center grey darken-3 white-text">
-            <a class="right white-text" style="padding-top:10px; font-family: Helvetica Neue, sans-serif" href="{% url 'logout' %}">Logout</a>
-            <h1><img src="{% static 'twitter-logo copy.png' %}" alt="Twitter Logo"><b>SCOTUS Tweet Database</b></h1>
+        <!-- NAVBAR -->
+        <div class="navbar-fixed">
+            <nav>
+                <div class="nav-wrapper w3-container grey darken-3 white-text">
+                    <a class="brand-logo"><i class="fa fa-twitter"></i> SCOTUS Tweet Database</a>
+                    <ul id="nav-mobile" class="right hide-on-med-and-down">
+                        <li>
+                            <a href="/scotustwitter/download" class="waves-effect waves-light btn modal-trigger">
+                                Download Data<i class="material-icons">file_download</i>\
+                            </a>
+                        </li>
+                        <li>
+                            <a name="refreshButton" href="?refresh=true" class="waves-effect waves-light btn">
+                                REFRESH<i class="material-icons">refresh</i>
+                            </a>
+                        </li>
+                        <li>
+                            <a name="logoutButton" href="{% url 'logout' %}">LOGOUT</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
         </div>
-
-        <div class="w3-section w3-padding-10"></div>
-        <div class="w3-container">
-            <!-- !SEARCH! -->
+        <!-- SIDENAV SEARCH -->
+        <ul id="slide-out" class="sidenav sidenav-fixed">
             <form action="" method="GET">{% csrf_token %}
-                <table>
-                    <tr>
-                       <td>
-                            <p><label><input value="OR" class="with-gap" name="ANDOR" type="radio"  {% if request.GET.ANDOR == "OR" or request.GET.ANDOR == None %} checked {% endif %}/><span>OR</span></label></p>
-                            <p><label><input value="AND" class="with-gap" name="ANDOR" type="radio" {% if request.GET.ANDOR == "AND" %} checked {% endif %}/><span>AND</span></label></p>
-                       </td>
-                       <td><input type="text" style="background-color:white; border-radius:5px; border:1px solid #9e9e9e" class="validate" name="users" {% if request.GET.page == None %}value="{{ request.GET.users }}"{% elif dbSearchDict.users != None %}value="{{ dbSearchDict.users }}"{% endif %} placeholder="  Users"></td>
-                       <td><input type="text" style="background-color:white; border-radius:5px; border:1px solid #9e9e9e" class="validate" name="hashtags" {% if request.GET.page == None %}value="{{ request.GET.hashtags }}"{% elif dbSearchDict.hashtags != None %}value="{{ dbSearchDict.hashtags }}"{% endif %} placeholder="    Hashtags"></td>
-                       <td><input type="text" style="background-color:white; border-radius:5px; border:1px solid #9e9e9e" class="validate" name="keywords" {% if request.GET.page == None %}value="{{ request.GET.keywords }}"{% elif dbSearchDict.keywords != None %}value="{{ dbSearchDict.keywords }}"{% endif %} placeholder="    Keywords"></td>
-                       <td><input type="text" style="background-color:white; border-radius:5px; border:1px solid #9e9e9e" class="datepicker" name="from" {% if request.GET.page == None %}value="{{ request.GET.from }}"{% elif dbSearchDict.from != None %}value="{{ dbSearchDict.from }}"{% endif %} placeholder="  From"></td>
-                       <td><input type="text" style="background-color:white; border-radius:5px; border:1px solid #9e9e9e" class="datepicker" name="to" {% if request.GET.page == None %}value="{{ request.GET.to }}"{% elif dbSearchDict.to != None %}value="{{ dbSearchDict.to }}"{% endif %} placeholder="  To"></td>
+                <!--SEARCH -->
+                <li class="no-padding">
+                    <ul class="collapsible collapsible-accordion">
+                        <li class="active">
+                            <a class="collapsible-header">Search</a>
+                            <div class="collapsible-body row">
+                                <ul class="col m10 offset-m1">
+                                    <li>
+                                        <input id="keywords" type="text" class="validate" name="keywords"
+                                            {% if request.GET.page == None %} value="{{ request.GET.keywords }}"
+                                            {% elif dbSearchDict.keywords != None %} value="{{ dbSearchDict.keywords }}"
+                                            {% endif %} placeholder="Keywords">
+                                    </li>
 
-                       <td><button class="btn-floating waves-effect waves-light btn" type="submit" name="search"><i class="material-icons">search</i></button></td>
-                       <td><a class="btn-floating waves-effect waves-light btn" href="?refresh=true"><i class="material-icons">refresh</i></a></td>
-                       <td><a href="/scotustwitter/download" class="btn-floating waves-effect waves-light btn modal-trigger"><i class="material-icons">file_download</i></a></td>
-                    </tr>
-                </table>
+                                    <li>
+                                        <p class="row" style="margin-bottom: 0em;">
+                                            <label class="col s6 center-align"><input value="OR" class="with-gap"
+                                                    name="ANDOR" type="radio"
+                                                    {% if request.GET.ANDOR == "OR" or request.GET.ANDOR == None %}
+                                                    checked {% endif %} /><span>OR</span>
+                                            </label>
+                                            <label class="col s6 center-align"><input value="AND" class="with-gap"
+                                                    name="ANDOR" type="radio" {% if request.GET.ANDOR == "AND" %}
+                                                    checked {% endif %} /><span>AND</span>
+                                            </label>
+                                        </p>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+                <!-- FILTERS -->
+                <li class="no-padding">
+                    <ul class="collapsible collapsible-accordion">
+                        <li class="">
+                            <a class="collapsible-header">Filters</a>
+                            <div class="collapsible-body row">
+                                <ul class="col m10 offset-m1">
+
+                                    <li>
+                                        <input type="text" class="datepicker" name="from"
+                                            {% if request.GET.page == None %}value="{{ request.GET.from }}"
+                                            {% elif dbSearchDict.from != None %}value="{{ dbSearchDict.from }}"
+                                            {% endif %} placeholder="From Date">
+                                    </li>
+                                    <li>
+                                        <input type="text" class="datepicker" name="to"
+                                            {% if request.GET.page == None %}value="{{ request.GET.to }}"
+                                            {% elif dbSearchDict.to != None %}value="{{ dbSearchDict.to }}" {% endif %}
+                                            placeholder="To Date">
+                                    </li>
+                                    <li>
+                                        <label>Maximum Bot Score</label>
+                                        <div class="range-field">
+                                            <input type="range" name="botMax" min="0" max="100"
+                                                {% if request.GET.page == None %}value="{{ request.GET.botMax }}"
+                                                {% elif dbSearchDict.botMax != None %}value="{{ dbSearchDict.botMax }}"
+                                                {% else %}value="100"
+                                                {% endif %} />
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label>Show Unscored Users</label>
+                                        <div class="switch">
+                                            <label>
+                                                Hide
+                                                <input name="showUnscoredUsers" type="checkbox" value="True"
+                                                    {% if dbSearchDict.showUnscoredUsers %}checked {% endif %}>
+                                                <span class="lever"></span>
+                                                Show
+                                            </label>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <label>Minimum Relevancy Score</label>
+                                        <div class="range-field">
+                                            <input type="range" name="relevancyMin" min="0" max="100"
+                                                {% if request.GET.page == None %}value="{{ request.GET.relevancyMin }}"
+                                                {% elif dbSearchDict.relevancyMin != None %}value="{{ dbSearchDict.relevancyMin }}"
+                                                {% else %}value="100"
+                                                {% endif %} />
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+                <!-- SORTING -->
+                <li class="no-padding">
+                    <ul class="collapsible collapsible-accordion">
+                        <li class="active">
+                            <a class="collapsible-header">Sorting</a>
+                            <div class="collapsible-body row">
+                                <ul class="col m10 offset-m1">
+                                    <li>
+                                        <select name="sortBy">
+                                            {% for i in sortFields %}
+                                                {%if dbSearchDict.sortBy == i %}
+                                                    <option selected="selected" value="{{ i }}">{{ i }}</option>
+                                                {%else %}
+                                                    <option value="{{ i }}">{{ i }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                    </li>
+                                    <li>
+                                        <label class="switch">
+                                            {%if dbSearchDict.sortOrder == "on" %}
+                                                <input name="sortOrder" type="checkbox" checked="True">
+                                            {%else %}
+                                                <input name="sortOrder" type="checkbox">
+                                            {% endif %}
+
+                                            <span class="slider">Reverse</span>
+                                        </label>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+                <li class="center">
+                    <button class="btn waves-effect waves-light tweet-filter" type="submit" name="action">Search
+                        <i class="material-icons left">search</i>
+                    </button>
+                </li>
             </form>
 
+        </ul>
+        <div class="w3-section w3-padding-10"></div>
+
+        <div class="outside-sidebar w3-container">
             <!--!DISPLAY TWEETS!-->
-            <div class="w3-section w3-padding-10"></div>
-
+            <div class="grid">
+                <div class="grid-sizer"></div>
+                <div class="gutter-sizer"></div>
                 {% for tweet in tweets %}
-                    {% if forloop.counter|divisibleby:2 == False %}
+                <!-- !TWEET MODAL! -->
+                <div id="{{tweet.id}}" class="modal">
+                    <div class="modal-content">
+                        <div class="row truncate">
+                            <h5>
+                                <a class="inline-icon left screenname" style="padding-right: 20px"
+                                    href="http://www.twitter.com/{{ tweet.originalUser.username }}">@{{tweet.originalUser.username}}
+                                    {%if tweet.originalUser.isVerified %}<i
+                                        class="material-icons">check_circle</i>{% endif %}
+                                </a>
+                                <span class="inline-icon grey-text left">
+                                    {% if tweet.originalUser.location %}
+                                    <i class="material-icons">location_on</i>
+                                    {{tweet.originalUser.location}}
+                                    {% else %}
+                                    <i class="material-icons">location_off</i>
+                                    {% endif %}
+                                </span>
+                            </h5>
+                        </div>
+                        <p>{{tweet.originalText|urlize}}</p>
                         <div class="row">
-                    {% endif %}
-                    <div class="col s6">
-                      <div class="card small">
-                        <div class="card-content">
-                          {% if tweet.isRetweet %}
-                            <p>Retweeted by: <a href="http://www.twitter.com/{{ tweet.newUser.username }}" target="_blank">@{{tweet.newUser.username}} {%if tweet.newUser.isVerified %}<i class="material-icons">check_circle</i>{% endif %}</a></p>
-                            {% if tweet.commentText %}
-                                <span class="activator grey-text text-darken-4"><h6>{{tweet.commentText|urlize}}</h6></span>
-                            {% endif %}
-                            <div class="retweet">
+                            <h5><b>Bot rating (English):</b>
+                                {% if tweet.originalUser.botScoreEnglish > 0 %}
+                                <span id="bot-score"> {% widthratio tweet.originalUser.botScoreEnglish 1 100 %}%</span>
+                                {% else %}
+                                <span id="bot-score">N/A</span>
+                                {% endif %}
+                            </h5>
+                            <h5><b>Bot rating (Universal):</b>
+                                {% if tweet.originalUser.botScoreEnglish > 0 %}
+                                <span id="bot-score">
+                                    {% widthratio tweet.originalUser.botScoreUniversal 1 100 %}%</span>
+                                {% else %}
+                                <span id="bot-score">N/A</span>
+                                {% endif %}
+                            </h5>
+                            <h5><b>Relevancy Score:</b>
+                                <span id="relevancy-score">{% widthratio tweet.relevancy 1 100 %}%</span>
+                            </h5>
+                        </div>
+                        <ul class="collapsible">
+                            <li>
+                                <div class="collapsible-header">Original Tweet Text Stats</div>
+                                <div class="collapsible-body"><table class="striped">
+                            <thead>
+                                <tr>
+                                    <th>Stat</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
 
-                          {% endif %}
-                          <span class="activator grey-text text-darken-4"><h6>{{tweet.originalText|urlize}}</h6><i class="material-icons right">more_vert</i></span>
-                          <a href="http://www.twitter.com/{{ tweet.originalUser.username }}"><h6>- @{{tweet.originalUser.username}} {%if tweet.originalUser.isVerified %}<i class="material-icons">check_circle</i>{% endif %}</h6></a>
-                          {% if tweet.isRetweet %}
-                            </div>
-                          {% endif %}
-                        </div>
-                        <div class="card-reveal">
-                          <span class="card-title grey-text text-darken-4"><i class="material-icons right">close</i></span>
-                          {% if tweet.isRetweet %}
-                            <h6>Retweet</h6>
-                            <div class="more-info">
-                              <h6>{{tweet.createdAt}}</h6>
-                              {% if tweet.newUser.location %}
-                                <h6>Location: {{tweet.newUser.location}}</h6>
-                              {% endif %}
-                              {% if tweet.commentText %}
-                                <h6>Favorites: {{tweet.numFavoritesNew}}</h6>
-                              {% endif %}
-                              <p>Last updated: {{tweet.lastUpdated }}</p>
-                            </div>
-                            <h6>Original Tweet</h6>
-                          {% endif %}
-                          <div class="more-info">
-                              {% if tweet.isRetweet == False %}
-                                <h6>{{tweet.createdAt}}</h6>
-                              {% endif %}
-                              {% if tweet.originalUser.location %}
-                                <h6>Location: {{tweet.originalUser.location}}</h6>
-                              {% endif %}
-                              <h6>Retweets: {{tweet.numRetweetsOriginal}}</h6>
-                              <h6>Favorites: {{tweet.numFavoritesOriginal}}</h6>
-                              {% if tweet.isRetweet == False %}
-                                <p>Last updated: {{tweet.lastUpdated }}</p>
-                              {% endif %}
-                          </div>
-                        </div>
-                      </div>
+                            <tbody>
+                                <tr>
+                                    <td>Syllable Count</td>
+                                    <td>{{tweet.original_syllable_count}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Lexicon Count</td>
+                                    <td>{{tweet.original_lexicon_count}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Sentence Count</td>
+                                    <td>{{tweet.original_sentence_count}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Flesch Reading Ease</td>
+                                    <td>{{tweet.original_flesch_reading_ease}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Flesch Kincaid Grade</td>
+                                    <td>{{tweet.original_flesch_kincaid_grade}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Gunning Fog</td>
+                                    <td>{{tweet.original_gunning_fog}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Smog Index</td>
+                                    <td>{{tweet.original_smog_index}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Automated Readability Index</td>
+                                    <td>{{tweet.original_automated_readability_index}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Coleman Liau Index</td>
+                                    <td>{{tweet.original_coleman_liau_index}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Linsear Write Formula</td>
+                                    <td>{{tweet.original_linsear_write_formula}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Dale-Chall Readability Score</td>
+                                    <td>{{tweet.original_dale_chall_readability_score}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Difficult Words</td>
+                                    <td>{{tweet.original_difficult_words}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Text Standard</td>
+                                    <td>{{tweet.original_text_standard}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Negative Sentiment Score</td>
+                                    <td>{{tweet.original_negative_sentiment}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Neutral Sentiment Score</td>
+                                    <td>{{tweet.original_neutral_sentiment}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Positive Sentiment Score</td>
+                                    <td>{{tweet.original_positive_sentiment}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Overall Sentiment Score</td>
+                                    <td>{{tweet.original_overall_sentiment}}</td>
+                                </tr>
+                            </tbody>
+                        </table></div>
+                            </li>
+                            <li>
+                                <div class="collapsible-header">Tweet Comment Text Stats</div>
+                                <div class="collapsible-body"><table class="striped">
+                            <thead>
+                                <tr>
+                                    <th>Stat</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr>
+                                    <td>Syllable Count</td>
+                                    <td>{{tweet.comment_syllable_count}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Lexicon Count</td>
+                                    <td>{{tweet.comment_lexicon_count}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Sentence Count</td>
+                                    <td>{{tweet.comment_sentence_count}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Flesch Reading Ease</td>
+                                    <td>{{tweet.comment_flesch_reading_ease}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Flesch Kincaid Grade</td>
+                                    <td>{{tweet.comment_flesch_kincaid_grade}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Gunning Fog</td>
+                                    <td>{{tweet.comment_gunning_fog}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Smog Index</td>
+                                    <td>{{tweet.comment_smog_index}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Automated Readability Index</td>
+                                    <td>{{tweet.comment_automated_readability_index}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Coleman Liau Index</td>
+                                    <td>{{tweet.comment_coleman_liau_index}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Linsear Write Formula</td>
+                                    <td>{{tweet.comment_linsear_write_formula}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Dale-Chall Readability Score</td>
+                                    <td>{{tweet.comment_dale_chall_readability_score}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Difficult Words</td>
+                                    <td>{{tweet.comment_difficult_words}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Text Standard</td>
+                                    <td>{{tweet.comment_text_standard}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Negative Sentiment Score</td>
+                                    <td>{{tweet.comment_negative_sentiment}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Neutral Sentiment Score</td>
+                                    <td>{{tweet.comment_neutral_sentiment}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Positive Sentiment Score</td>
+                                    <td>{{tweet.comment_positive_sentiment}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Overall Sentiment Score</td>
+                                    <td>{{tweet.comment_overall_sentiment}}</td>
+                                </tr>
+                            </tbody>
+                        </table></div>
+                            </li>
+                            <li>
+                                <div class="collapsible-header">Combined Text Stats</div>
+                                <div class="collapsible-body"><table class="striped">
+                            <thead>
+                                <tr>
+                                    <th>Stat</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr>
+                                    <td>Syllable Count</td>
+                                    <td>{{tweet.combined_syllable_count}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Lexicon Count</td>
+                                    <td>{{tweet.combined_lexicon_count}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Sentence Count</td>
+                                    <td>{{tweet.combined_sentence_count}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Flesch Reading Ease</td>
+                                    <td>{{tweet.combined_flesch_reading_ease}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Flesch Kincaid Grade</td>
+                                    <td>{{tweet.combined_flesch_kincaid_grade}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Gunning Fog</td>
+                                    <td>{{tweet.combined_gunning_fog}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Smog Index</td>
+                                    <td>{{tweet.combined_smog_index}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Automated Readability Index</td>
+                                    <td>{{tweet.combined_automated_readability_index}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Coleman Liau Index</td>
+                                    <td>{{tweet.combined_coleman_liau_index}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Linsear Write Formula</td>
+                                    <td>{{tweet.combined_linsear_write_formula}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Dale-Chall Readability Score</td>
+                                    <td>{{tweet.combined_dale_chall_readability_score}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Difficult Words</td>
+                                    <td>{{tweet.combined_difficult_words}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Text Standard</td>
+                                    <td>{{tweet.combined_text_standard}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Negative Sentiment Score</td>
+                                    <td>{{tweet.combined_negative_sentiment}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Neutral Sentiment Score</td>
+                                    <td>{{tweet.combined_neutral_sentiment}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Positive Sentiment Score</td>
+                                    <td>{{tweet.combined_positive_sentiment}}</td>
+                                </tr>
+                                <tr>
+                                    <td>Overall Sentiment Score</td>
+                                    <td>{{tweet.combined_overall_sentiment}}</td>
+                                </tr>
+                            </tbody>
+                        </table></div>
+                            </li>
+                        </ul>
+                        
+
                     </div>
-                    {% if forloop.counter|divisibleby:2 %}
+                </div>
+                <!-- !TWEET CARD! -->
+                <div class="grid-item">
+                    <div class="card small hoverable">
+                        <div class="card-content">
+                            <div class="card-title">
+                                <div class="row truncate">
+                                    <a class="inline-icon left screenname" style="padding-right: 20px"
+                                        href="http://www.twitter.com/{{ tweet.originalUser.username }}">@{{tweet.originalUser.username}}
+                                        {%if tweet.originalUser.isVerified %}<i
+                                            class="material-icons">check_circle</i>{% endif %}
+                                    </a>
+                                    <span class="inline-icon grey-text left">
+                                        {% if tweet.originalUser.location %}
+                                        <i class="material-icons">location_on</i>
+                                        {{tweet.originalUser.location}}
+                                        {% else %}
+                                        <i class="material-icons">location_off</i>
+                                        {% endif %}
+                                    </span>
+                                    <i class="fa fa-user-robot"></i>
+                                </div>
+                            </div>
+                            <!-- <span class="grey-text text-darken-4"> -->
+                            <p>{{tweet.originalText|urlize}}</p>
+                            <!-- </span> -->
                         </div>
-                    {% endif %}
+                        <div class="card-action tweet-stats row valign-wrapper">
+                            <div class="col s2">
+                                <span class="grey-text text-darken-4"><i
+                                        class="material-icons">favorite</i>{{tweet.numFavoritesOriginal}}</span>
+                            </div>
+                            <div class="col s2">
+                                <span class="grey-text text-darken-4"><i
+                                        class="material-icons">loop</i>{{tweet.numRetweetsOriginal}}</span>
+                            </div>
+                            <div class="col s2">
+                                <a data-role="none" href="#{{tweet.id}}" class="modal-trigger tweet-link">
+                                    <span class="grey-text text-darken-4"><i class="material-icons">launch</i></span>
+                                </a>
+                            </div>
+
+                            <div class="col s6">
+                                Created: {{tweet.createdAt}}
+                                <br>
+                                Updated: {{tweet.lastUpdated }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {% endfor %}
             </div>
         </div>
@@ -108,23 +524,24 @@ h1, th {font-family: "Helvetica Neue", sans-serif}
 {% if user.is_superuser %}
 <!-- change twitter search button-->
 <div class="row">
-    <a id="change-query-btn" class="btn-floating btn-large waves-effect waves-light red modal-trigger right" href="#change-query-modal"><i class="material-icons">build</i></a>
+    <a id="change-query-btn" class="btn-floating btn-large waves-effect waves-light red modal-trigger right"
+        href="#change-query-modal"><i class="material-icons">build</i></a>
 </div>
 {% endif %}
 
 <!-- pagination -->
-<div class="pagination row container">
+<div class="pagination row container outside-sidebar">
 
-  {% if tweets.has_previous %}
+    {% if tweets.has_previous %}
     <a class="pagination-action" href="?page=1">
-     <i class="fa fa-angle-double-left" aria-hidden="true"></i>
+        <i class="fa fa-angle-double-left" aria-hidden="true"></i>
     </a>
     <a class="pagination-action" href="?page={{ tweets.previous_page_number }}">
-      <i class="fa fa-angle-left" aria-hidden="true"></i>
+        <i class="fa fa-angle-left" aria-hidden="true"></i>
     </a>
-  {% endif %}
+    {% endif %}
 
-  {% for num in tweets.paginator.page_range %}
+    {% for num in tweets.paginator.page_range %}
 
     {% if tweets.number == num %}
     <span class="pagination-number pagination-current">{{ num }}</span>
@@ -132,83 +549,107 @@ h1, th {font-family: "Helvetica Neue", sans-serif}
     <a class="pagination-number" href="?page={{ num }}">{{ num }}</a>
     {% endif %}
 
-  {% endfor %}
+    {% endfor %}
 
-  {% if tweets.has_next %}
+    {% if tweets.has_next %}
     <a class="pagination-action" href="?page={{ tweets.next_page_number }}">
-      <i class="fa fa-angle-right" aria-hidden="true"></i>
+        <i class="fa fa-angle-right" aria-hidden="true"></i>
     </a>
     <a class="pagination-action" href="?page={{ tweets.paginator.num_pages }}">
-      <i class="fa fa-angle-double-right" aria-hidden="true"></i>
+        <i class="fa fa-angle-double-right" aria-hidden="true"></i>
     </a>
-  {% endif %}
+    {% endif %}
 
 </div>
 
 <!-- change twitter search query modal -->
 <div id="change-query-modal" class="modal bottom-sheet">
     <div class="modal-content">
-      <h4 class="center">Search Twitter By</h4>
+        <h4 class="center">Search Twitter By</h4>
         <div class="row">
             <form class="col s12" action="" method="GET">{% csrf_token %}
-              <div class="row">
-                <div class="input-field col s6">
-                  <textarea id="pull-users" name="pull-users" class="materialize-textarea">{{ twitterSearchDict.usersString }}</textarea>
-                  <label for="pull-users">Users</label>
+                <div class="row">
+                    <div class="input-field col s6">
+                        <textarea id="pull-users" name="pull-users"
+                            class="materialize-textarea">{{ twitterSearchDict.usersString }}</textarea>
+                        <label for="pull-users">Users</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <textarea id="pull-not-users" name="pull-not-users"
+                            class="materialize-textarea">{{ twitterSearchDict.notUsersString }}</textarea>
+                        <label for="pull-not-users">Unwanted Users</label>
+                    </div>
                 </div>
-                <div class="input-field col s6">
-                  <textarea id="pull-not-users" name="pull-not-users" class="materialize-textarea">{{ twitterSearchDict.notUsersString }}</textarea>
-                  <label for="pull-not-users">Unwanted Users</label>
+                <div class="row">
+                    <div class="input-field col s6">
+                        <textarea id="pull-hashtags" name="pull-hashtags"
+                            class="materialize-textarea">{{ twitterSearchDict.hashtagsString }}</textarea>
+                        <label for="pull-hashtags">Hashtags</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <textarea id="pull-keywords" name="pull-keywords"
+                            class="materialize-textarea">{{ twitterSearchDict.keywordsString }}</textarea>
+                        <label for="pull-keywords">Keywords</label>
+                    </div>
                 </div>
-              </div>
-              <div class="row">
-                <div class="input-field col s6">
-                  <textarea id="pull-hashtags" name="pull-hashtags" class="materialize-textarea">{{ twitterSearchDict.hashtagsString }}</textarea>
-                  <label for="pull-hashtags">Hashtags</label>
-                </div>
-                <div class="input-field col s6">
-                  <textarea id="pull-keywords" name="pull-keywords" class="materialize-textarea">{{ twitterSearchDict.keywordsString }}</textarea>
-                  <label for="pull-keywords">Keywords</label>
-                </div>
-              </div>
-              <div class="row">
-                <div class="input-field col s6">
-                    <select name="pull-since">
-                      <option {% if twitterSearchDict.fromDateVal == 0 %} selected="selected" {% endif %} value="0">Today</option>
-                      <option {% if twitterSearchDict.fromDateVal == 1 %} selected="selected" {% endif %} value="1">One Day Ago</option>
-                      <option {% if twitterSearchDict.fromDateVal == 2 %} selected="selected" {% endif %} value="2">Two Days Ago</option>
-                      <option {% if twitterSearchDict.fromDateVal == 3 %} selected="selected" {% endif %} value="3">Three Days Ago</option>
-                      <option {% if twitterSearchDict.fromDateVal == 4 %} selected="selected" {% endif %} value="4">Four Days Ago</option>
-                      <option {% if twitterSearchDict.fromDateVal == 5 %} selected="selected" {% endif %} value="5">Five Days Ago</option>
-                      <option {% if twitterSearchDict.fromDateVal == 6 %} selected="selected" {% endif %} value="6">Six Days Ago</option>
-                      <option {% if twitterSearchDict.fromDateVal == 7 %} selected="selected" {% endif %} value="7">Seven Days Ago</option>
-                    </select>
-                    <label>From (Inclusive)</label>
-                </div>
-                <div class="input-field col s6">
-                    <select name="pull-until">
-                      <option {% if twitterSearchDict.toDateVal == 0 %} selected="selected" {% endif %} value="0">Today</option>
-                      <option {% if twitterSearchDict.toDateVal == -1 %} selected="selected" {% endif %} value="-1">Tomorrow</option>
-                      <option {% if twitterSearchDict.toDateVal == 1 %} selected="selected" {% endif %} value="1">One Day Ago</option>
-                      <option {% if twitterSearchDict.toDateVal == 2 %} selected="selected" {% endif %} value="2">Two Days Ago</option>
-                      <option {% if twitterSearchDict.toDateVal == 3 %} selected="selected" {% endif %} value="3">Three Days Ago</option>
-                      <option {% if twitterSearchDict.toDateVal == 4 %} selected="selected" {% endif %} value="4">Four Days Ago</option>
-                      <option {% if twitterSearchDict.toDateVal == 5 %} selected="selected" {% endif %} value="5">Five Days Ago</option>
-                      <option {% if twitterSearchDict.toDateVal == 6 %} selected="selected" {% endif %} value="6">Six Days Ago</option>
-                      <option {% if twitterSearchDict.toDateVal == 7 %} selected="selected" {% endif %} value="7">Seven Days Ago</option>
+                <div class="row">
+                    <div class="input-field col s6">
+                        <select name="pull-since">
+                            <option {% if twitterSearchDict.fromDateVal == 0 %} selected="selected" {% endif %}
+                                value="0">Today</option>
+                            <option {% if twitterSearchDict.fromDateVal == 1 %} selected="selected" {% endif %}
+                                value="1">One Day Ago</option>
+                            <option {% if twitterSearchDict.fromDateVal == 2 %} selected="selected" {% endif %}
+                                value="2">Two Days Ago</option>
+                            <option {% if twitterSearchDict.fromDateVal == 3 %} selected="selected" {% endif %}
+                                value="3">Three Days Ago</option>
+                            <option {% if twitterSearchDict.fromDateVal == 4 %} selected="selected" {% endif %}
+                                value="4">Four Days Ago</option>
+                            <option {% if twitterSearchDict.fromDateVal == 5 %} selected="selected" {% endif %}
+                                value="5">Five Days Ago</option>
+                            <option {% if twitterSearchDict.fromDateVal == 6 %} selected="selected" {% endif %}
+                                value="6">Six Days Ago</option>
+                            <option {% if twitterSearchDict.fromDateVal == 7 %} selected="selected" {% endif %}
+                                value="7">Seven Days Ago</option>
+                        </select>
+                        <label>From (Inclusive)</label>
+                    </div>
+                    <div class="input-field col s6">
+                        <select name="pull-until">
+                            <option {% if twitterSearchDict.toDateVal == 0 %} selected="selected" {% endif %} value="0">
+                                Today</option>
+                            <option {% if twitterSearchDict.toDateVal == -1 %} selected="selected" {% endif %}
+                                value="-1">Tomorrow</option>
+                            <option {% if twitterSearchDict.toDateVal == 1 %} selected="selected" {% endif %} value="1">
+                                One Day Ago</option>
+                            <option {% if twitterSearchDict.toDateVal == 2 %} selected="selected" {% endif %} value="2">
+                                Two Days Ago</option>
+                            <option {% if twitterSearchDict.toDateVal == 3 %} selected="selected" {% endif %} value="3">
+                                Three Days Ago</option>
+                            <option {% if twitterSearchDict.toDateVal == 4 %} selected="selected" {% endif %} value="4">
+                                Four Days Ago</option>
+                            <option {% if twitterSearchDict.toDateVal == 5 %} selected="selected" {% endif %} value="5">
+                                Five Days Ago</option>
+                            <option {% if twitterSearchDict.toDateVal == 6 %} selected="selected" {% endif %} value="6">
+                                Six Days Ago</option>
+                            <option {% if twitterSearchDict.toDateVal == 7 %} selected="selected" {% endif %} value="7">
+                                Seven Days Ago</option>
 
-                    </select>
-                    <label>To (Exclusive)</label>
+                        </select>
+                        <label>To (Exclusive)</label>
+                    </div>
                 </div>
-              </div>
-                <button class="waves-effect waves-light btn right" type="submit" name="change"><i class="material-icons">done</i></button>
-                    {% if pulling %}
-                        <a class="left waves-effect waves-light" href="/scotustwitter/stop"><i class="material-icons" style="color:red;">stop</i></a>
-                        <p>Stop Pulling</p>
-                    {% else %}
-                        <a class="left waves-effect waves-light" href="/scotustwitter/start"><i class="material-icons" style="color:green;">play_arrow</i></a>
-                        <p>Start Pulling</p>
-                    {% endif %}
+                <button class="waves-effect waves-light btn right" type="submit" name="change"><i
+                        class="material-icons">done</i></button>
+                {% if pulling %}
+                <a class="left waves-effect waves-light" href="/scotustwitter/stop"><i class="material-icons"
+                        style="color:red;">stop</i></a>
+                <p>Stop Pulling</p>
+                {% else %}
+                <a class="left waves-effect waves-light" href="/scotustwitter/start"><i class="material-icons"
+                        style="color:green;">play_arrow</i></a>
+                <p>Start Pulling</p>
+                {% endif %}
             </form>
         </div>
     </div>
@@ -225,21 +666,33 @@ h1, th {font-family: "Helvetica Neue", sans-serif}
 </div>
 
 <script>
-    $(document).ready(function(){
+    $(document).ready(function () {
         $('.modal').modal();
-        $('.datepicker').datepicker();
+        $('.collapsible').collapsible();
         $('select').formSelect();
-        $('#change-query-modal').modal({
-            dismissible: true
+        $('.datepicker').datepicker({
+            container: $("body"),
+            showClearBtn: true
+        });
+        $('#change-query-modal')
+            .modal({
+                dismissible: true,
+
+            });
+        $('.grid').masonry({
+            columnWidth: '.grid-sizer',
+            gutter: '.gutter-sizer',
+            itemSelector: '.grid-item',
+            percentPosition: true
         });
 
-        if("{{warning}}" != "None"){
+        if ("{{warning}}" != "None") {
             $('#change-query-modal').modal('open');
             $('#error-modal').modal('open');
             $('#error-title').html("WARNING");
             $('#error-message').html("{{warning}}");
         }
-        if("{{error}}" != "None"){
+        if ("{{error}}" != "None") {
             $('#change-query-modal').modal({
                 dismissible: false
             });
@@ -251,80 +704,6 @@ h1, th {font-family: "Helvetica Neue", sans-serif}
     });
 </script>
 
-<style>
-    .card {
-        border-radius: 30px;
-    }
 
-    .more-info {
-        margin-top: 25px;
-        margin-bottom: 25px;
-        padding: 20px;
-        border-style: solid;
-        border-width: thin;
-        border-radius: 30px;
-        border-color: #9e9e9e;
-    }
-
-    #change-query-btn {
-        margin-right: 40px;
-    }
-
-    .retweet {
-        margin-top: 15px;
-        padding: 15px;
-        border-style: solid;
-        border-width: thin;
-        border-radius: 30px;
-        border-color: #9e9e9e;
-    }
-
-    .pagination {
-        text-align: center;
-        margin-top: 1em;
-    }
-
-    .pagination-number {
-        padding: 0.5em 0.8em;
-        border-radius: 2px;
-        color: #fff;
-        background-color: #009688;
-    }
-
-    .pagination-number:hover, .pagination-current {
-        background-color: #00796b;
-    }
-
-    .pagination-action {
-        margin: 0 0.1em;
-        display: inline-block;
-        padding: 0.5em 0.5em;
-        color: #B9B9B9;
-        font-size: 1.3em;
-    }
-
-    .pagination-action:hover, .pagination-previous, .pagination-next {
-        color: #3354AA;
-    }
-
-    img {
-        height: 10%;
-        width: 10%;
-    }
-
-    .modal {
-        border-radius:30px;
-    }
-
-    .modal.bottom-sheet {
-        max-height: 100% !important;
-        overflow-y: visible;
-    }
-
-    .toast {
-        background-color: #ffffff;
-        color: #000000
-    }
-</style>
 
 {% endblock %}
