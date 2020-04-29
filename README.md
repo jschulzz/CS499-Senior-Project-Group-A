@@ -37,10 +37,14 @@ Execute in local repo directory
     pip install vaderSentiment
 
     pip install botometer
+    
+    pip install scikit-learn
+
+Update the `buildEnv.sh` file with your email so you can approve new local accounts
 
 Inside the mysite folder of project directory
 
-     . ./buildEnv.sh    // not a typo, there are multiple dots
+    . ./buildEnv.sh    // not a typo, there are multiple dots
 
     python manage.py migrate
 
@@ -113,9 +117,3 @@ Inside the mysite folder of project directory
  
  navigate to ec2domain/scotustwitter 
  
- 
- ### Known Bugs
- 
- 1)Logout of admin page redirect to login of website
- 
- 2)Admin page doesn't seem to render correctly on deployed site
