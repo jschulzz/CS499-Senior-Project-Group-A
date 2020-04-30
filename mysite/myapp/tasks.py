@@ -37,7 +37,7 @@ twitter_app_auth = {
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
-api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
+api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True, botometer_api_url="botometer-pro.p.rapidapi.com")
 
 bom = botometer.Botometer(
     wait_on_ratelimit=True, rapidapi_key=rapidapi_key, **twitter_app_auth
