@@ -37,10 +37,10 @@ twitter_app_auth = {
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
-api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True, botometer_api_url="botometer-pro.p.rapidapi.com")
+api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
 
 bom = botometer.Botometer(
-    wait_on_ratelimit=True, rapidapi_key=rapidapi_key, **twitter_app_auth
+    wait_on_ratelimit=True, rapidapi_key=rapidapi_key, botometer_api_url="https://botometer-pro.p.rapidapi.com", **twitter_app_auth 
 )
 
 sid_obj = SentimentIntensityAnalyzer()
