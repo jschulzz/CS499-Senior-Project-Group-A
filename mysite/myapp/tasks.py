@@ -279,6 +279,10 @@ def searchListToString(d, key):
 # input: a search dictionary of paramters to search twitter by
 # output: none
 def getPullParametersAsStrings(searchDict):
+    fromDateVal = 0
+    fromDateString = ""
+    toDateVal = 0
+    toDateString = ""
     # get number of days between today and given from date
     if searchDict["fromDate"] != "":
         delta = timezone.now() - datetime.strptime(
@@ -289,9 +293,7 @@ def getPullParametersAsStrings(searchDict):
             fromDateString = str(fromDateVal) + " days ago"
         elif fromDateVal == 0:
             fromDateString = "Today"
-    else:
-        fromDateVal = 0
-        fromDateString = ""
+
     # get number of days between today and given to date
     if searchDict["toDate"] != "":
         delta = timezone.now() - datetime.strptime(
@@ -304,9 +306,6 @@ def getPullParametersAsStrings(searchDict):
             toDateString = "Today"
         else:
             toDateString = "Tomorrow"
-    else:
-        toDateVal = 0
-        toDateString = ""
 
     # set dictionary to string conversions of dict array values (and # days between today and from/to dates)
     return {
