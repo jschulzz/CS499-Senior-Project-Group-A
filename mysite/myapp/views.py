@@ -289,55 +289,20 @@ def index(request):
 
     # OR fields
     if request.GET.get("ANDOR") == "OR" or request.GET.get("ANDOR") == None:
-        # join all queries together
-        queries = userQueries + keywordQueries
-        or_filter = Q()
-        for q in queries:
-            or_filter |= q
-
         # combine OR filter with our other filters
-        query_filter &= or_filter
-        
-        # return results depending on situation
-        if queries:
-            # put result of filter in list, and add hashtag results
-            tweetsList = list(Tweet.objects.filter(query_filter))  
-            tweetsList += hashtagResults 
-        # if no user or keyword entries but hashtag entries
-        elif hashtagResults:
-            tweetsList = hashtagResults
-        # no users, keywords, or hashtags, but they asked for hashtag
-        # this means requested hastag doesn't exist in DB
-        elif dbSearchDict["hashtags"]:
-            tweetsList = []
-        # no queries and no hashtag results, means nothing entered in search box
-        else:
-            tweetsList = list(Tweet.objects.filter(query_filter))
+        query_filter = keywordQueries
+        tweetsList = list(Tweet.objects.filter(query_filter))
 
     # AND fields
     else:
-        user_query = Q()
         keyword_query = Q()
-
-        # get results of user filter
-        for q in userQueries:
-            user_query |= q
-        query_filter &= user_query 
-
-        # get results of keyword filter
+        #filter first word, then filter second word for an and function
         for q in keywordQueries:
-            keyword_query |= q
-        query_filter &= keyword_query 
-
+            qeury_filter = Tweet.objects.filter(q)
+        
+        query_filter = list(query_filter)
         print(query_filter)
-
-        if hashtagResults:
-            filtered_tweets = list(Tweet.objects.filter(query_filter))
-            tweetsList = list(set.intersection(set(filtered_tweets), set(hashtagResults)))
-        elif dbSearchDict["hashtags"]:
-            tweetsList = []
-        else:
-            tweetsList = list(Tweet.objects.filter(query_filter))
+        tweetsList = query_filter
     
     if fromDate and toDate:
         tweetsList = [
