@@ -777,7 +777,7 @@ def searchTwitter():
                 updated += newUpd
 
                 # sleeper to avoid 180 requests per 15 minute rate limit
-                time.sleep(12)
+                time.sleep(24)
 
                 # update loop variable max_id
                 max_id = results[-1].id
