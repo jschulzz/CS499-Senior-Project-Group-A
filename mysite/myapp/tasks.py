@@ -226,7 +226,6 @@ def getTextStats(text):
     return {
         "syllableCount": syllableCount,
         "lexiconCount": lexiconCount,
-        "sentenceCount": sentenceCount,
         "fleschReadingEase": fleschReadingEase,
         "fleschKincaidGrade": fleschKincaidGrade,
         "gunningFog": gunningFog,
@@ -287,7 +286,7 @@ def getPullParametersAsStrings(searchDict):
     if searchDict["fromDate"] != "":
         delta = timezone.now() - datetime.strptime(
             searchDict["fromDate"], "%Y-%m-%d"
-        ).replace(tzinfo=pytz.EST)
+        ).replace(tzinfo=pytz.UTC)
         fromDateVal = delta.days
         if fromDateVal > 0:
             fromDateString = str(fromDateVal) + " days ago"
@@ -298,7 +297,7 @@ def getPullParametersAsStrings(searchDict):
     if searchDict["toDate"] != "":
         delta = timezone.now() - datetime.strptime(
             searchDict["toDate"], "%Y-%m-%d"
-        ).replace(tzinfo=pytz.EST)
+        ).replace(tzinfo=pytz.UTC)
         toDateVal = delta.days
         if toDateVal > 0:
             toDateString = str(toDateVal) + " days ago"
@@ -490,8 +489,8 @@ def parseTwitterResponse(response):
         tweet["newLocation"] = newLocation
         tweet["newIsVerified"] = newVerified
 
-        # tweet['createdAt'] = datetime.strptime(t.created_at, '%a %b %d %H:%M:%S +0000 %Y').replace(tzinfo=pytz.EST)
-        tweet["createdAt"] = t.created_at.replace(tzinfo=pytz.EST)
+        # tweet['createdAt'] = datetime.strptime(t.created_at, '%a %b %d %H:%M:%S +0000 %Y').replace(tzinfo=pytz.UTC)
+        tweet["createdAt"] = t.created_at.replace(tzinfo=pytz.UTC)
         tweet["isRetweet"] = isRetweet
 
         tweet["originalText"] = originalText
