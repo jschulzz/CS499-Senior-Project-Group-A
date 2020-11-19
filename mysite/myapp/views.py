@@ -290,7 +290,10 @@ def index(request):
     # OR fields
     if request.GET.get("ANDOR") == "OR" or request.GET.get("ANDOR") == None:
         #search database for keywordQuery
-        tweetsList = list(Tweet.objects.filter(query_filter))
+        keyword_query = Q()
+        for q in keywordQueries:
+            keyword_query |= q 
+        tweetsList = list(Tweet.objects.filter(keyword_query))
 
     # AND fields
     else:
